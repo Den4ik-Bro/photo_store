@@ -27,7 +27,7 @@
     {% for response in response %}
         <form action="." method="POST">
             {% csrf_token %}
-            <a href="/profile/{{ response.photographer.id }}"><p>{{ response.photographer }}</p></a><input type="submit" value="выбрать">
+            <a href="/profile/{{ response.photographer.id }}"><p>{{ response.photographer }} <input type="submit" value="выбрать"></p></a>
         </form>
     {% endfor %}
 
