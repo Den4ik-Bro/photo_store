@@ -169,6 +169,7 @@ def get_order(request, order_id):
 
 
 def edit_order(request, order_id):
+    """редактирование заказа"""
     order = Order.objects.get(id=order_id)
     if request.method == 'POST':
         form = OrderForm(request.POST, instance=order)
@@ -184,6 +185,7 @@ def edit_order(request, order_id):
 
 
 def del_order(request, order_id):
+    """удалить заказ"""
     order = Order.objects.get(id=order_id)
     order.delete()
     return redirect('/orders/')
