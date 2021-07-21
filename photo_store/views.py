@@ -151,7 +151,7 @@ def orders(request):
 
 
 def get_order(request, order_id):
-    """получение заказов"""
+    """получение заказов и добавление отклика н заказ"""
     order = Order.objects.get(id=order_id)
     response = Response.objects.filter(order=order)
     is_user_has_response = Response.objects.filter(photographer=request.user, order=order).exists()
