@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %} Фото №{{current_photo.id}} {% endblock %}
+
+{% block content %}
+
+        <p><img src="{{current_photo.image.url}}"></p>
+        <p>{{ description }}</p>
+        {% for tag in current_photo.tags.all %}
+                <a href="/tag_photos/{{ tag.id }}/">#{{ tag.name }}</a>
+        {% endfor %}
+        <form action="." method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <p><input type="submit" value="Добавить тэг"></p>
+        </form>
+        <a href="/del_photo/{{current_photo.id}}/"><input type="button" value="Удалить фото"></a>
+
+{% endblock %}

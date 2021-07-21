@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %} Фотографии по тэгу {{ tag.name }} {% endblock %}
+
+{% block content %}
+
+<h1>Фотографии по тэгу #{{ tag.name }}</h1>
+{% for photo in tag.photo_set.all %}
+  <img src="{{ photo.image.url }}">
+{% endfor %}
+
+{% endblock %}

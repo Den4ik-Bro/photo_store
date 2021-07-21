@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %} Редактирование заказа {% endblock %}
+
+{% block content %}
+
+  <form action="." method="POST">
+    {% csrf_token %}
+    {{ order_form.as_p }}
+    {% if form.errors %}
+      {% for error in form.errors %}
+        <p>{{error}}</p>
+      {% endfor %}
+    {% endif %}
+    <p><input type="submit" value="Изменить"></p>
+  </form>
+
+{% endblock %}
