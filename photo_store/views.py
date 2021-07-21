@@ -184,7 +184,7 @@ def edit_order(request, order_id):
 
 
 def del_order(request, order_id):
-
+    """удалить заказ"""
     order = Order.objects.get(id=order_id)
     order.delete()
     return redirect('/orders/')
