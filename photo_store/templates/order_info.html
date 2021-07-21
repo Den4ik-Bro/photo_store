@@ -24,11 +24,12 @@
     {% endif %}
 
     <h2>Откликнулись:</h2>
-    {% for response in response %}
-        <form action="." method="POST">
-            {% csrf_token %}
-            <a href="/profile/{{ response.photographer.id }}"><p>{{ response.photographer }} <input type="submit" value="выбрать"></p></a>
-        </form>
-    {% endfor %}
-
+    {% if not response.is_selected %}
+        {% for response in response %}
+            <form action="." method="POST">
+                {% csrf_token %}
+                <a href="/profile/{{ response.photographer.id }}"><p>{{ response.photographer }} <input type="submit" value="выбрать"></p></a>
+            </form>
+        {% endfor %}
+    {% endif %}
 {% endblock %}
