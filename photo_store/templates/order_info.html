@@ -25,7 +25,7 @@
 
     <h2>Откликнулись:</h2>
     {% for response in response %}
-        <p>{{ response.photographer }}</p>
+        <a href="/profile/{{ response.photographer.id }}"><p>{{ response.photographer }}</p></a>
     {% endfor %}
 
 {% endblock %}
