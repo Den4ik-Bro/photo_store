@@ -151,6 +151,7 @@ def orders(request):
 
 
 def get_order(request, order_id):
+    """получение заказов"""
     order = Order.objects.get(id=order_id)
     is_user_has_response = Response.objects.filter(photographer=request.user, order=order).exists()
     if request.method == 'POST':
