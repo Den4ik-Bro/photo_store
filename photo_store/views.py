@@ -28,6 +28,7 @@ def main(request):
 
 
 def profile_login(request):
+    """редирект на profile/int"""
     return redirect('/profile/' + str(request.user.id) + '/')
 
 
