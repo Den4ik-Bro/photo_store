@@ -37,7 +37,7 @@ class ResponseForm(forms.ModelForm):
         #            'rate']
 
 
-class SelectPerformer(forms.ModelForm):
+class SelectPerformerForm(forms.ModelForm):
     """форма выбора исполнителя в откликах"""
     class Meta:
         model = Response

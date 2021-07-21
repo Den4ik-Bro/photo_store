@@ -161,6 +161,7 @@ def get_order(request, order_id):
             response = form.save(commit=False)
             response.order = order
             response.photographer = request.user
+            response.is_selected = False
             response.save()
             return redirect('/ok/')
     form = ResponseForm()
