@@ -28,11 +28,8 @@ class OrderForm(forms.ModelForm):
 class ResponseForm(forms.ModelForm):
     class Meta:
         model = Response
-        fields = \
-            [
-                'text',
-                'is_selected'
-            ]
+        fields = ['text']
+
         # exclude = ['comment',
         #            'photographer',
         #            'datetime',
