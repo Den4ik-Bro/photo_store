@@ -23,4 +23,9 @@
         <p><a href="/orders/">назад</a></p>
     {% endif %}
 
+    <h2>Откликнулись:</h2>
+    {% for response in response %}
+        <p>{{ response.photographer }}</p>
+    {% endfor %}
+
 {% endblock %}

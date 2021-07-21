@@ -153,6 +153,7 @@ def orders(request):
 def get_order(request, order_id):
     """получение заказов"""
     order = Order.objects.get(id=order_id)
+    response = Response.objects.filter(order=order)
     is_user_has_response = Response.objects.filter(photographer=request.user, order=order).exists()
     if request.method == 'POST':
         form = ResponseForm(request.POST)
@@ -165,6 +166,7 @@ def get_order(request, order_id):
     form = ResponseForm()
     return render(request, 'order_info.html', {'current_order': order,
                                                'is_user_has_response': is_user_has_response,
+                                               'response': response,
                                                'form': form})
 
 
