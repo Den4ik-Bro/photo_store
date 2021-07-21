@@ -67,6 +67,7 @@ def profile(request, user_id):
 
 
 def edit_profile(request, user_id):
+    """редактирование профиля"""
     form = ProfileForm()
     if request.method == 'POST':
         user = request.user
