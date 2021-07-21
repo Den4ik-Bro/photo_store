@@ -32,6 +32,7 @@ def profile_login(request):
 
 
 def profile(request, user_id):
+    """Страница профиля"""
     # user_id = User.objects.get(id=user_id)
     user = User.objects.get(id=user_id)
     photos = Photo.objects.filter(photographer=user)
