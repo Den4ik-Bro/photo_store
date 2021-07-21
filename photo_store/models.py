@@ -58,7 +58,8 @@ class Order(models.Model):
     text = models.TextField(blank=True, null=True, verbose_name='описание_задачи')
     price = models.IntegerField(verbose_name='цена')
     is_public = models.BooleanField(default=True)
-    owner = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='клиент')
+    owner = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='клиент')  # заказчик
+    #  photographer = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='исполнитель')
 
     def __str__(self):
         return f'Клиент {self.owner}, тема заказа {self.topic}'
@@ -87,7 +88,7 @@ class Response(models.Model):
     rate = models.PositiveSmallIntegerField(blank=True, null=True, verbose_name='оценка')
     comment = models.TextField(blank=True, null=True, verbose_name='комментарий')
     order = models.ForeignKey(Order, on_delete=models.PROTECT, verbose_name='задача')
-    photographer = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='фотограф')
+    photographer = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='фотограф')  # исполнитель
 
     def __str__(self):
         return f'{self.order}'  # , фотограф {self.photographer}'
