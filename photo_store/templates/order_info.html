@@ -25,7 +25,10 @@
 
     <h2>Откликнулись:</h2>
     {% for response in response %}
-        <a href="/profile/{{ response.photographer.id }}"><p>{{ response.photographer }}</p></a>
+        <form action="." method="POST">
+            {% csrf_token %}
+            <a href="/profile/{{ response.photographer.id }}"><p>{{ response.photographer }}</p></a><input type="submit" value="выбрать">
+        </form>
     {% endfor %}
 
 {% endblock %}
