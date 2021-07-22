@@ -153,9 +153,9 @@ def orders(request):
 def get_order(request, order_id):
     """получение заказов и добавление отклика н заказ"""
     order = Order.objects.get(id=order_id)
-    response = Response.objects.filter(order=order)
+    response = Response.objects.filter(order=order)  # все объекты респонса по этому заказу
     is_user_has_response = Response.objects.filter(photographer=request.user, order=order).exists()
-    if request.method == 'POST':
+    if request.method == 'POST':  # добавить отклик
         form = ResponseForm(request.POST)
         if form.is_valid():
             response = form.save(commit=False)
@@ -169,6 +169,14 @@ def get_order(request, order_id):
                                                'is_user_has_response': is_user_has_response,
                                                'response': response,
                                                'form': form})
+
+
+def selected_response(request, response_id):
+    response = Response.objects.get(id=response_id)
+    order = response.order
+    response.is_selected = True
+    response.save()
+    return redirect('/order/' + str(order.id) + '/')
 
 
 def edit_order(request, order_id):

@@ -25,11 +25,17 @@
 
     <h2>Откликнулись:</h2>
     {% if not response.is_selected %}
-        {% for response in response %}
-            <form action="." method="POST">
-                {% csrf_token %}
-                <a href="/profile/{{ response.photographer.id }}"><p>{{ response.photographer }} <input type="submit" value="выбрать"></p></a>
-            </form>
-        {% endfor %}
+        {% if current_order.owner == request.user %}
+            {% for response in response %}
+                    <a href="/profile/{{ response.photographer.id }}"><p>{{ response.photographer }}</p></a>
+                    <p>{{ response.text }}</p>
+                    <p><a href="/select_response/{{ response.id }}"><input type="submit" value="выбрать"></a></p>
+                    ======================================
+            {% endfor %}
+        {% else %}
+            {% for response in response %}
+                <a href="/profile/{{ response.photographer.id }}"><p>{{ response.photographer }}</p></a>
+            {% endfor %}
+        {% endif %}
     {% endif %}
 {% endblock %}

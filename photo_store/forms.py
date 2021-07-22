@@ -37,13 +37,6 @@ class ResponseForm(forms.ModelForm):
         #            'rate']
 
 
-class SelectPerformerForm(forms.ModelForm):
-    """форма выбора исполнителя в откликах"""
-    class Meta:
-        model = Response
-        fields = ['is_selected']
-
-
 class PhotoForm(forms.ModelForm):
     class Meta:
         model = Photo
