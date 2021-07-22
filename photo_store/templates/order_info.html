@@ -24,18 +24,21 @@
     {% endif %}
 
     <h2>Откликнулись:</h2>
-    {% if not response.is_selected %}
         {% if current_order.owner == request.user %}
             {% for response in response %}
+                {% if response.is_selected %}
+                    <p>Ваш фотограф: <a href="/profile/{{ response.photographer.id }}">{{ response.photographer }}</a></p>
+                {% else %}
                     <a href="/profile/{{ response.photographer.id }}"><p>{{ response.photographer }}</p></a>
                     <p>{{ response.text }}</p>
                     <p><a href="/select_response/{{ response.id }}"><input type="submit" value="выбрать"></a></p>
                     ======================================
+                {% endif %}
             {% endfor %}
         {% else %}
             {% for response in response %}
                 <a href="/profile/{{ response.photographer.id }}"><p>{{ response.photographer }}</p></a>
             {% endfor %}
         {% endif %}
-    {% endif %}
+
 {% endblock %}
