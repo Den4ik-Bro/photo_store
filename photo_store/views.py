@@ -171,7 +171,7 @@ def get_order(request, order_id):
                                                'form': form})
 
 
-def selected_response(request, response_id):
+def select_response(request, response_id):
     response = Response.objects.get(id=response_id)
     order = response.order
     response.is_selected = True
