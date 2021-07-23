@@ -3,3 +3,4 @@ media/*
 *.pyc
 **/__pycache__/*
 **/migrations/*
+*.log

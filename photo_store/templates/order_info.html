@@ -25,18 +25,14 @@
     {% if not accepted_response %}
         <h2>Откликнулись:</h2>
             {% if current_order.owner == request.user %}
-                {% for response in response %}
-                    {% if response.is_selected %}
-                        <p>Ваш фотограф: <a href="/profile/{{ response.photographer.id }}">{{ response.photographer }}</a></p>
-                    {% else %}
+                {% for response in current_order.response_set.all %}
                         <a href="/profile/{{ response.photographer.id }}"><p>{{ response.photographer }}</p></a>
                         <p>{{ response.text }}</p>
                         <p><a href="/select_response/{{ response.id }}"><input type="submit" value="выбрать"></a></p>
                         ======================================
-                    {% endif %}
                 {% endfor %}
             {% else %}
-                {% for response in response %}
+                {% for response in current_order.response_set.all %}
                     <a href="/profile/{{ response.photographer.id }}"><p>{{ response.photographer }}</p></a>
                 {% endfor %}
             {% endif %}

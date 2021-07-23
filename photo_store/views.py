@@ -152,10 +152,10 @@ def orders(request):
 
 def get_order(request, order_id):
     """получение заказов и добавление отклика н заказ"""
-    order = Order.objects.get(id=order_id)
-    responses = Response.objects.filter(order=order)  # все объекты респонса по этому заказу
-    is_user_has_response = responses.filter(photographer=request.user).exists()
-    accepted_response = responses.filter(is_selected=True).first()
+    order = Order.objects.select_related('topic', 'owner').prefetch_related('response_set').get(id=order_id)
+    # responses = Response.objects.filter(order=order)  # все объекты респонса по этому заказу
+    is_user_has_response = order.response_set.filter(photographer=request.user).exists()
+    accepted_response = order.response_set.filter(is_selected=True).first()
     if request.method == 'POST':  # добавить отклик
         form = ResponseForm(request.POST)
         if form.is_valid():
@@ -168,7 +168,6 @@ def get_order(request, order_id):
     form = ResponseForm()
     return render(request, 'order_info.html', {'current_order': order,
                                                'is_user_has_response': is_user_has_response,
-                                               'response': responses,
                                                'accepted_response': accepted_response,
                                                'form': form})
 
