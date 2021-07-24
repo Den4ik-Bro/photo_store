@@ -223,6 +223,7 @@ def ok(request):
 
 
 def photo_view(request, photo_id):
+    """Функция отображения фотки. Комментарий от Леонида"""
     photo = Photo.objects.get(id=photo_id)
     description = photo.description
     if request.method == 'POST':
