@@ -98,6 +98,7 @@ def edit_profile(request, user_id):
 
 
 def del_photo(request, photo_id):
+    """Функция удаления фотографии. Комментарий от Леонида"""
     # if request.method == 'POST':
     user = request.user
     photo = Photo.objects.get(id=photo_id)
