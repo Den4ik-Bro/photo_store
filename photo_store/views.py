@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from .models import Photo, Message, Order, Topic, Response, Tag
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from .forms import ProfileForm, OrderForm, ResponseForm, PhotoForm, SendMessageForm, RegistrationUserForm, TagForm
 from django.forms.models import model_to_dict
 
@@ -153,7 +153,13 @@ def orders(request):
 
 def get_order(request, order_id):
     """получение заказов и добавление отклика н заказ"""
-    order = Order.objects.select_related('topic', 'owner').prefetch_related('response_set').get(id=order_id)
+    order = Order.objects.only('topic', 'owner', 'price')\
+                            .select_related('topic', 'owner')\
+                            .prefetch_related\
+                                (
+                                    Prefetch('response_set', Response.objects.select_related('photographer').all())
+                                )\
+                            .get(id=order_id)
     # responses = Response.objects.filter(order=order)  # все объекты респонса по этому заказу
     is_user_has_response = order.response_set.filter(photographer=request.user).exists()
     accepted_response = order.response_set.filter(is_selected=True).first()
