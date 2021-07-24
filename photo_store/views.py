@@ -224,6 +224,7 @@ def ok(request):
 
 
 def photo_view(request, photo_id):
+    """функия просмотра отдельной фотографии"""
     photo = Photo.objects.get(id=photo_id)
     description = photo.description
     if request.method == 'POST':
