@@ -173,6 +173,7 @@ def get_order(request, order_id):
 
 
 def select_response(request, response_id):
+    '''функция выбора отклика'''
     response = Response.objects.get(id=response_id)
     order = response.order
     response.is_selected = True
