@@ -4,7 +4,7 @@
 {% block content %}
 
         <p><img src="{{current_photo.image.url}}"></p>
-        <p>{{ description }}</p>
+        <p>{{ current_photo.description }}</p>
         {% for tag in current_photo.tags.all %}
                 <a href="/tag_photos/{{ tag.id }}/">#{{ tag.name }}</a>
         {% endfor %}

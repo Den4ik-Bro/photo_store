@@ -34,10 +34,9 @@ def profile_login(request):
 
 def profile(request, user_id):
     """Страница профиля"""
-    # user_id = User.objects.get(id=user_id)
     user = User.objects.get(id=user_id)
     photos = Photo.objects.filter(photographer=user)
-    message = Message.objects.filter(Q(sender=user) | Q(receiver=user))  # Q | = или
+    message = Message.objects.filter(Q(sender=user) | Q(receiver=user))[:3]  # Q | = или
     response = Response.objects.filter(photographer=user)
     my_orders = Order.objects.filter(owner=user)
     if request.method == 'POST':
@@ -123,8 +122,7 @@ def del_photo(request, photo_id):
 
 def orders(request):
     """Заказы"""
-    orders = Order.objects.exclude(owner=request.user).all()
-    topics = Topic.objects.all()
+    orders = Order.objects.only('topic', 'owner',).exclude(owner=request.user).all()
     if request.method == 'POST':
         form = OrderForm(request.POST)
         if form.is_valid():
@@ -133,7 +131,6 @@ def orders(request):
             order.save()
     form = OrderForm()
     return render(request, 'orders.html', {'user_orders': orders,
-                                           'topic_list': topics,
                                            'form': form})
 
 
@@ -153,7 +150,7 @@ def orders(request):
 
 def get_order(request, order_id):
     """получение заказов и добавление отклика н заказ"""
-    order = Order.objects.only('topic', 'owner', 'price')\
+    order = Order.objects.only('topic', 'owner', 'price', 'text')\
                             .select_related('topic', 'owner')\
                             .prefetch_related\
                                 (
@@ -231,8 +228,7 @@ def ok(request):
 
 def photo_view(request, photo_id):
     """функия просмотра отдельной фотографии"""
-    photo = Photo.objects.get(id=photo_id)
-    description = photo.description
+    photo = Photo.objects.only('image', 'description', 'tags').get(id=photo_id)
     if request.method == 'POST':
         form = TagForm(request.POST)
         if form.is_valid():
@@ -240,7 +236,6 @@ def photo_view(request, photo_id):
             photo.tags.add(tag)
     form = TagForm()
     return render(request, 'photo_view.html', {'current_photo': photo,
-                                               'description': description,
                                                'form': form})
 
 
