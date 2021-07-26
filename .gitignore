@@ -3,4 +3,8 @@ media/*
 *.pyc
 **/__pycache__/*
 **/migrations/*
+<<<<<<< HEAD
 *.log
+=======
+debug.log
+>>>>>>> dev
