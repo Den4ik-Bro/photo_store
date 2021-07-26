@@ -1,74 +1,64 @@
 {% extends 'base.html' %}
-{% block title %} Профиль {% endblock %}
+{% block title %} Ваш профиль {% endblock %}
 
 {% block content %}
 
-    <h2>Профиль</h2>
-    <p>Имя: {{ current_user.first_name }}</p>
-    <p>Фамилия: {{ current_user.last_name }}</p>
-    <p>Email: {{ current_user.email }}</p>
+<h2>Профиль</h2>
+    <p>Имя: {{ user.first_name }}</p>
+    <p>Фамилия: {{ user.last_name }}</p>
+    <p>Email: {{ user.email }}</p>
+{% if user.id == request.user.id %}
+    <p><a href="edit/">Редактировать</a></p>
+    <p><a href="/logout/">Выйти</a></p>
+{% endif %}
 
-    {% if current_user.id == request.user.id %}
-        <p><a href="edit/">Редактировать</a></p>
-        <p><a href="/logout/">Выйти</a></p>
-    {% endif %}
+<h2>Портфолио</h2>
+{% for photo in user.photo_set.all %}
+    <img src="{{ photo.image.url }}" style="width: 15%">
+{% endfor %}
 
-    <h2>Портфолио</h2>
-    {% for photo in user_photos %}
-        <a href="/photo_view/{{ photo.id }}"> <img src="{{ photo.image.url }}" style="width: 15%"></a>
+{% if user.id == request.user.id %}
+    <h2>Добавить фотографию:</h2>
+    <form action="." method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ photo_form.as_p }}
+        <p><input type="submit" value="Добавить"></p>
+    </form>
+{% endif %}
+
+<h2>Сообщения</h2>
+{% if user.id == request.user.id %}
+    {% for message in user.message_set.all %}
+        <p>Кто: {{ message.receiver }}</p>
+        <p>Текст: {{ message.text }}</p>
+        <p>Кому: {{ message.sender }}</p>
+    ==============================================
     {% endfor %}
+{% else %}
+    <form action="." method="POST">
+        {% csrf_token %}
+        <h2>Написать сообщение</h2>
+        {{ message_form.as_p }}
+        <input type="submit" value="Отправить">
+    </form>
+{% endif %}
 
-    {% if current_user.id == request.user.id %}
-        <h2>Добавить фотографию:</h2>
-        <form action="." method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-    <!--        <input type="text">-->
-    <!--        <input type="password">-->
-    <!--        <input type="number">-->
-    <!--        <input type="checkbox">-->
-    <!--        <input type="radio">-->
-    <!--        <input type="button">-->
-    <!--        <input type="submit">-->
-            {{ photo_form.as_p }}
-            <p><input type="submit" value="Добавить"></p>
-        </form>
-    {% endif %}
-
-    {% if current_user.id == request.user.id %}
-        <h2>Сообщения</h2>
-        <p>{% for message in user_message %}</p>
-            <p>Отправил: {{ message.sender }};</p>>
-            <p>Текст сообщения: {{ message.text }};</p>
-            <p>Получатель: {{ message.receiver }}</p>
-        {% endfor %}
-    {% endif %}
-
-    {% if current_user.id != request.user.id %}
-        <form action="." method="POST">
-            {% csrf_token %}
-            <h2>Написать сообщение</h2>
-            {{ message_form.as_p }}
-            <input type="submit" value="Отправить">
-        </form>
-    {% endif %}
-
-    {% if current_user.id == request.user.id %}
-        <h2>Мои заказы</h2>
-        <p>{% for order in my_orders %}</p>
+{% if user.id == request.user.id %}
+    <h2>Мои заказы</h2>
+    <p>{% for order in user.order_set.all %}</p>
             <a href="/order/{{order.id}}">{{order}}</a>
         {% endfor %}
-    {% else %}
-        <h2>Заказы</h2>
-        <p>{% for order in my_orders %}</p>
+{% else %}
+    <h2>Заказы</h2>
+    <p>{% for order in user.order_set.all %}</p>
             <a href="/order/{{order.id}}">{{order}}</a>
         {% endfor %}
     {% endif %}
 
-    {% if current_user.id == request.user.id %}
-        <h2>Мои отклики</h2>
-        <p>{% for my_response in user_response %}</p>
+{% if user.id == request.user.id %}
+    <h2>Мои отклики</h2>
+    <p>{% for my_response in user.response_set.all %}</p>
             <p><a href="/order/{{my_response.order.id}}">{{my_response}}</a></p>
-        {% endfor %}
-    {% endif %}
-
+    {% endfor %}
+{% endif %}
 {% endblock %}

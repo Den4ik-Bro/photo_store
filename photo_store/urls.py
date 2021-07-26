@@ -19,6 +19,6 @@ urlpatterns = [
     path('select_response/<int:response_id>/', views.select_response),
     path('photo_view/<int:photo_id>/', views.photo_view),
     path('del_photo/<int:photo_id>/', views.del_photo),
-    path('del_order/<int:order_id>/', views.del_order)
+    path('del_order/<int:order_id>/', views.del_order),
 ]
 

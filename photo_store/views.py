@@ -12,40 +12,32 @@ def main(request):
     return render(request, 'main.html', {'users': users})
 
 
-# def user_info(request, user_id):
-#     user_id = User.objects.get(id=user_id)
-#     form = SendMessage()
-#     if request.method == 'POST':
-#         form = SendMessage(request.POST)
-#         if form.is_valid():
-#             message = form.save(commit=False)
-#             message.sender = request.user
-#             message.receiver = user_id
-#             message.save()
-#             return redirect('/user/' + str(user_id.id) + '/')
-#     return render(request, 'user.html', {'user': user_id,
-#                                          'form': form})
-
-
 def profile_login(request):
     """редирект на profile/int"""
     return redirect('/profile/' + str(request.user.id) + '/')
 
 
 def profile(request, user_id):
-    """Страница профиля"""
-    user = User.objects.get(id=user_id)
-    photos = Photo.objects.filter(photographer=user)
-    message = Message.objects.filter(Q(sender=user) | Q(receiver=user))[:3]  # Q | = или
-    response = Response.objects.filter(photographer=user)
-    my_orders = Order.objects.filter(owner=user)
+    user = User.objects.prefetch_related\
+        (
+            Prefetch('order_set', Order.objects.select_related('topic', 'owner').all())
+        )\
+        .prefetch_related\
+        (
+            Prefetch('response_set', Response.objects.select_related('photographer').all())
+        )\
+        .prefetch_related\
+        (
+            Prefetch('message_set', Message.objects.select_related('sender', 'receiver').all())
+        )\
+        .get(pk=user_id)
     if request.method == 'POST':
         photo_form = PhotoForm(request.POST, request.FILES)
         if photo_form.is_valid():
             photo = photo_form.save(commit=False)
             photo.photographer = request.user
             photo.save()
-            return redirect('/profile/' + str(user.id) + '/')
+            return redirect('/profile_test.html/' + str(user.id) + '/')
     photo_form = PhotoForm()
     if request.method == 'POST':
         message_form = SendMessageForm(request.POST)
@@ -56,13 +48,42 @@ def profile(request, user_id):
             message.save()
             return redirect('/profile/' + str(user.id) + '/')
     message_form = SendMessageForm()
-    return render(request, 'profile.html', {'current_user': user,
-                                            'user_photos': photos,
-                                            'user_message': message,
-                                            'user_response': response,
+    return render(request, 'profile.html', {'user': user,
                                             'photo_form': photo_form,
-                                            'my_orders': my_orders,
-                                            'message_form': message_form})
+                                             'message_form': message_form})
+
+
+# def profile(request, user_id):
+#     """Страница профиля"""
+#     user = User.objects.get(id=user_id)
+#     photos = Photo.objects.filter(photographer=user)
+#     message = Message.objects.filter(Q(sender=user) | Q(receiver=user))  # Q | = или
+#     response = Response.objects.filter(photographer=user)
+#     my_orders = Order.objects.filter(owner=user)
+#     if request.method == 'POST':
+#         photo_form = PhotoForm(request.POST, request.FILES)
+#         if photo_form.is_valid():
+#             photo = photo_form.save(commit=False)
+#             photo.photographer = request.user
+#             photo.save()
+#             return redirect('/profile/' + str(user.id) + '/')
+#     photo_form = PhotoForm()
+#     if request.method == 'POST':
+#         message_form = SendMessageForm(request.POST)
+#         if message_form.is_valid():
+#             message = message_form.save(commit=False)
+#             message.sender = request.user
+#             message.receiver = User.objects.get(id=user_id)
+#             message.save()
+#             return redirect('/profile/' + str(user.id) + '/')
+#     message_form = SendMessageForm()
+#     return render(request, 'profile.html', {'current_user': user,
+#                                             'user_photos': photos,
+#                                             'user_message': message,
+#                                             'user_response': response,
+#                                             'photo_form': photo_form,
+#                                             'my_orders': my_orders,
+#                                             'message_form': message_form})
 
 
 def edit_profile(request, user_id):
