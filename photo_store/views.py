@@ -150,6 +150,7 @@ def orders(request):
             order = form.save(commit=False)
             order.owner = request.user
             order.save()
+            return redirect('/profile/' + str(order.owner.id) + '/')
     form = OrderForm()
     return render(request, 'orders.html', {'user_orders': orders,
                                            'form': form})
@@ -273,6 +274,7 @@ def registration(request):
             if form.cleaned_data['password_1'] == form.cleaned_data['password_2']:
                 user.set_password(form.cleaned_data['password_1'])
                 user.save()
+                return redirect('/login/')
     else:
         form = RegistrationUserForm()
     return render(request, 'register.html', {'form': form})

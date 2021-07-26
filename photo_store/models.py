@@ -57,7 +57,7 @@ class Order(models.Model):
     topic = models.ForeignKey('Topic', on_delete=models.CASCADE, verbose_name='тема_задачи')
     text = models.TextField(blank=True, null=True, verbose_name='описание_задачи')
     price = models.IntegerField(verbose_name='цена')
-    is_public = models.BooleanField(default=True)
+    is_public = models.BooleanField(default=True, verbose_name='публично')
     owner = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='клиент')  # заказчик
     #  photographer = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='исполнитель')
 
