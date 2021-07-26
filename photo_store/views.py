@@ -13,11 +13,12 @@ def main(request):
 
 
 def profile_login(request):
-    """редирект на profile/int"""
+    """редирект на profile/<int:user_id>/"""
     return redirect('/profile/' + str(request.user.id) + '/')
 
 
 def profile(request, user_id):
+    """функция профиля"""
     user = User.objects.prefetch_related\
         (
             Prefetch('order_set', Order.objects.select_related('topic', 'owner').all())
@@ -171,7 +172,7 @@ def orders(request):
 
 
 def get_order(request, order_id):
-    """получение заказов и добавление отклика н заказ"""
+    """просмотр заказа и добавление отклика на заказ"""
     order = Order.objects.only('topic', 'owner', 'price', 'text')\
                             .select_related('topic', 'owner')\
                             .prefetch_related\
@@ -231,6 +232,7 @@ def del_order(request, order_id):
 
 
 def ok(request):
+    """отклик добавлен успешно"""
     return render(request, 'ok.html')
 
 
@@ -262,11 +264,13 @@ def photo_view(request, photo_id):
 
 
 def tag_photos(request, tag_id):
+    """тэги фотографии"""
     tag = Tag.objects.get(id=tag_id)
     return render(request, 'tag_photos.html', {'tag': tag})
 
 
 def registration(request):
+    """регистрация"""
     if request.method == 'POST':
         form = RegistrationUserForm(request.POST)
         if form.is_valid():
