@@ -37,6 +37,18 @@
                 {% endfor %}
             {% endif %}
     {% else %}
-        <p>Ваш фотограф: <a href="/profile/{{ accepted_response.photographer.id }}">{{ accepted_response.photographer }}</a></p>
+        <p>Исполнитель: <a href="/profile/{{ accepted_response.photographer.id }}">{{ accepted_response.photographer }}</a></p>
+        <p><h2>Фотографии:</h2></p>
+        {% for photo in photo %}
+            <img src="{{ photo.image.url }}" style="width: 15%">
+        {% endfor %}
+    {% endif %}
+    {% if accepted_response.photographer == request.user %}
+        <p><h3>загрузить фотографии</h3></p>
+        <form action="." method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ photo_form.as_p }}
+            <p><input type="submit" value="Добавить"></p>
+        </form>
     {% endif %}
 {% endblock %}

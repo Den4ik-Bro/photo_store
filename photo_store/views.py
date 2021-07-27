@@ -33,21 +33,20 @@ def profile(request, user_id):
         )\
         .get(pk=user_id)
     if request.method == 'POST':
+        message_form = SendMessageForm(request.POST)
         photo_form = PhotoForm(request.POST, request.FILES)
         if photo_form.is_valid():
             photo = photo_form.save(commit=False)
             photo.photographer = request.user
             photo.save()
-            return redirect('/profile_test.html/' + str(user.id) + '/')
-    photo_form = PhotoForm()
-    if request.method == 'POST':
-        message_form = SendMessageForm(request.POST)
+            return redirect('/profile/' + str(user.id) + '/')
         if message_form.is_valid():
             message = message_form.save(commit=False)
             message.sender = request.user
             message.receiver = User.objects.get(id=user_id)
             message.save()
             return redirect('/profile/' + str(user.id) + '/')
+    photo_form = PhotoForm()
     message_form = SendMessageForm()
     return render(request, 'profile.html', {'user': user,
                                             'photo_form': photo_form,
@@ -185,6 +184,7 @@ def get_order(request, order_id):
     accepted_response = order.response_set.filter(is_selected=True).first()
     if request.method == 'POST':  # добавить отклик
         form = ResponseForm(request.POST)
+        photo_form = PhotoForm(request.POST, request.FILES)
         if form.is_valid():
             response = form.save(commit=False)
             response.order = order
@@ -192,15 +192,26 @@ def get_order(request, order_id):
             response.is_selected = False
             response.save()
             return redirect('/ok/')
+        if photo_form.is_valid():
+            photo = photo_form.save(commit=False)
+            photo.photographer = request.user
+            photo.response = order.response_set.get(is_selected=True)
+            photo.save()
     form = ResponseForm()
-    return render(request, 'order_info.html', {'current_order': order,
-                                               'is_user_has_response': is_user_has_response,
-                                               'accepted_response': accepted_response,
-                                               'form': form})
+    photo_form = PhotoForm()
+    context = {'current_order': order,
+               'is_user_has_response': is_user_has_response,
+               'accepted_response': accepted_response,
+               'form': form,
+               'photo_form': photo_form}
+    if accepted_response:
+        photos = Photo.objects.filter(response=accepted_response)
+        context['photo'] = photos
+    return render(request, 'order_info.html', context)
 
 
 def select_response(request, response_id):
-    '''функция выбора отклика'''
+    """функция выбора отклика"""
     response = Response.objects.get(id=response_id)
     order = response.order
     response.is_selected = True

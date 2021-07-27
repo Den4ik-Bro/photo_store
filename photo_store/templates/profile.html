@@ -14,7 +14,9 @@
 
 <h2>Портфолио</h2>
 {% for photo in user.photo_set.all %}
-    <img src="{{ photo.image.url }}" style="width: 15%">
+    {% if not photo.response %}
+        <a href="/photo_view/{{ photo.id }}"><img src="{{ photo.image.url }}" style="width: 15%"></a>
+    {% endif %}
 {% endfor %}
 
 {% if user.id == request.user.id %}
