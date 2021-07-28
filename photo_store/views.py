@@ -191,7 +191,7 @@ def get_order(request, order_id):
             response.photographer = request.user
             response.is_selected = False
             response.save()
-            Message.objects.create(text=response.text,
+            Message.objects.create(text=response.text,   # сообщение заказчику от исполнителя
                                    sender=response.photographer,
                                    receiver=order.owner)
             return redirect('/ok/')
@@ -219,6 +219,9 @@ def select_response(request, response_id):
     order = response.order
     response.is_selected = True
     response.save()
+    Message.objects.create(text=f'Вас выбрали исполнителем заказа {order}',
+                           sender=order.owner,
+                           receiver=response.photographer)
     return redirect('/order/' + str(order.id) + '/')
 
 
