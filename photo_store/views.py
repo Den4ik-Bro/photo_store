@@ -248,7 +248,10 @@ def edit_order(request, order_id):
 def del_order(request, order_id):
     """удалить заказ"""
     order = Order.objects.get(id=order_id)
-    order.delete()
+    if not order.response_set.filter(is_selected=True).first():  # если у заказа выбран исполнитель заказ удалить нельзя
+        order.delete()
+    else:
+        return redirect('/orders/')
     return redirect('/orders/')
 
 

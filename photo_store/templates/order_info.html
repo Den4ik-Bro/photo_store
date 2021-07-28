@@ -5,7 +5,7 @@
     <h1>{{current_order.topic.name}}</h1>
     <p>Описание: {{current_order.text}}</p>
     <p>Цена: {{current_order.price}}</p>
-    {% if not is_user_has_response and current_order.owner != user%}
+    {% if not is_user_has_response and current_order.owner != user %}
         <form action="." method="POST">
             {% csrf_token %}
             <h2>Отклик на заказ:</h2>
@@ -13,10 +13,14 @@
             <input type="submit" value="Ответить">
             <p><a href="/orders/">назад</a></p>
         </form>
-    {% elif current_order.owner == user %}
+    {% elif current_order.owner == user and not accepted_response %}
         <p>Это ваш заказ</p>
         <p><a href="edit/">Редактировать</a></p>
         <p><a href="/del_order/{{current_order.id}}">Удалить заказ</a></p>
+        <p><a href="/orders/">назад</a></p>
+    {% elif current_order.owner == user and accepted_response %}
+        <p>Это ваш заказ</p>
+        <p><a href="edit/">Редактировать</a></p>
         <p><a href="/orders/">назад</a></p>
     {% else %}
         <p>Вы уже оставили отклик на этот заказ</p>
@@ -26,10 +30,10 @@
         <h2>Откликнулись:</h2>
             {% if current_order.owner == request.user %}
                 {% for response in current_order.response_set.all %}
-                        <a href="/profile/{{ response.photographer.id }}"><p>{{ response.photographer }}</p></a>
-                        <p>{{ response.text }}</p>
-                        <p><a href="/select_response/{{ response.id }}"><input type="submit" value="выбрать"></a></p>
-                        ======================================
+                    <a href="/profile/{{ response.photographer.id }}"><p>{{ response.photographer }}</p></a>
+                    <p>{{ response.text }}</p>
+                    <p><a href="/select_response/{{ response.id }}"><input type="submit" value="выбрать"></a></p>
+                    ======================================
                 {% endfor %}
             {% else %}
                 {% for response in current_order.response_set.all %}
