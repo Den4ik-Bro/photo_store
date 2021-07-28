@@ -222,6 +222,10 @@ def select_response(request, response_id):
     Message.objects.create(text=f'Вас выбрали исполнителем заказа {order}',
                            sender=order.owner,
                            receiver=response.photographer)
+    del_response = Response.objects.filter(order=order)
+    for s in del_response:
+        if not s.is_selected:
+            s.delete()
     return redirect('/order/' + str(order.id) + '/')
 
 
