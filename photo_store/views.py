@@ -191,6 +191,9 @@ def get_order(request, order_id):
             response.photographer = request.user
             response.is_selected = False
             response.save()
+            Message.objects.create(text=response.text,
+                                   sender=response.photographer,
+                                   receiver=order.owner)
             return redirect('/ok/')
         if photo_form.is_valid():
             photo = photo_form.save(commit=False)
