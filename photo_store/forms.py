@@ -30,11 +30,15 @@ class ResponseForm(forms.ModelForm):
         model = Response
         fields = ['text']
 
-        # exclude = ['comment',
-        #            'photographer',
-        #            'datetime',
-        #            'order',
-        #            'rate']
+
+class RateResponseForm(forms.ModelForm):
+    class Meta:
+        model = Response
+        fields = \
+            [
+                'rate',
+                'comment'
+            ]
 
 
 class PhotoForm(forms.ModelForm):

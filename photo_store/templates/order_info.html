@@ -20,8 +20,13 @@
         <p><a href="/orders/">назад</a></p>
     {% elif current_order.owner == user and accepted_response %}
         <p>Это ваш заказ</p>
-        <p><a href="edit/">Редактировать</a></p>
         <p><a href="/orders/">назад</a></p>
+        <p><a href="edit/">Редактировать</a></p>
+        <form action="." method="POST">
+            {% csrf_token %}
+            {{ rate_response_form.as_p }}
+            <input type="submit" value="Оставить оценку">
+        </form>
     {% else %}
         <p>Вы уже оставили отклик на этот заказ</p>
         <p><a href="/orders/">назад</a></p>

@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from .models import Photo, Message, Order, Topic, Response, Tag
 from django.db.models import Q, Prefetch
-from .forms import ProfileForm, OrderForm, ResponseForm, PhotoForm, SendMessageForm, RegistrationUserForm, TagForm
+from .forms import ProfileForm, OrderForm, ResponseForm, PhotoForm, SendMessageForm, RegistrationUserForm, TagForm, \
+    RateResponseForm
 from django.forms.models import model_to_dict
 
 
@@ -185,7 +186,8 @@ def get_order(request, order_id):
     if request.method == 'POST':  # добавить отклик
         form = ResponseForm(request.POST)
         photo_form = PhotoForm(request.POST, request.FILES)
-        if form.is_valid():
+        rate_response_form = RateResponseForm(request.POST)
+        if form.is_valid():                             # добавить отклик
             response = form.save(commit=False)
             response.order = order
             response.photographer = request.user
@@ -195,18 +197,27 @@ def get_order(request, order_id):
                                    sender=response.photographer,
                                    receiver=order.owner)
             return redirect('/ok/')
-        if photo_form.is_valid():
+        if photo_form.is_valid():                        # добавить фотку к заказу
             photo = photo_form.save(commit=False)
             photo.photographer = request.user
             photo.response = order.response_set.get(is_selected=True)
             photo.save()
+            return redirect('/order/' + str(order.id) + '/')
+        if rate_response_form.is_valid():                 # добавить оценку и отзыв выполненого заказа
+            rate_comment = rate_response_form.save(commit=False)
+            accepted_response.comment = rate_comment.comment
+            accepted_response.rate = rate_comment.rate
+            accepted_response.save()
+            return redirect('/order/' + str(order.id) + '/')
     form = ResponseForm()
     photo_form = PhotoForm()
+    rate_response_form = RateResponseForm()
     context = {'current_order': order,
                'is_user_has_response': is_user_has_response,
                'accepted_response': accepted_response,
                'form': form,
-               'photo_form': photo_form}
+               'photo_form': photo_form,
+               'rate_response_form': rate_response_form}
     if accepted_response:
         photos = Photo.objects.filter(response=accepted_response)
         context['photo'] = photos
@@ -250,9 +261,9 @@ def del_order(request, order_id):
     order = Order.objects.get(id=order_id)
     if not order.response_set.filter(is_selected=True).first():  # если у заказа выбран исполнитель заказ удалить нельзя
         order.delete()
+        return redirect('/orders/')
     else:
         return redirect('/orders/')
-    return redirect('/orders/')
 
 
 def ok(request):
