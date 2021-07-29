@@ -33,9 +33,14 @@
 <h2>Сообщения</h2>
 {% if user.id == request.user.id %}
     {% for message in user.message_set.all %}
+        <p>{{ message.date_time }}</p>
         <p>Кто: {{ message.sender }}</p>
-        <p><a href="message/">Текст: {{ message.text }}</a></p>
-        <p>Кому: {{ message.receiver }}</p>
+        <p>Текст: {{ message.text }}</p>
+        <form action="/message/{{ message.id }}" method="GET">
+            {% csrf_token %}
+            <p><input type="submit" value="ответить"></p>
+        </form>
+<!--        <p>Кому: {{ message.receiver }}</p>-->
     ==============================================
     {% endfor %}
 {% else %}

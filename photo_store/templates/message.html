@@ -1,10 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% block title %} Сообщения {% endblock %}
 
-</body>
-</html>
+{% block content %}
+
+<p>{{ message.sender }}</p>
+{% for text in text_message %}
+    {% if text.receiver == request.user %}
+        <p>{{ text.date_time }}</p>
+        <p>{{ text.text }}</p>
+    {% endif %}
+{% endfor %}
+{% endblock %}

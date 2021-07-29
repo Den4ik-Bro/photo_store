@@ -33,7 +33,6 @@ def profile(request, user_id):
             Prefetch('message_set', Message.objects.select_related('sender', 'receiver').all())
         )\
         .get(pk=user_id)
-    message = Message.objects.filter(Q(sender=user) | Q(receiver=user))
     if request.method == 'POST':
         message_form = SendMessageForm(request.POST)
         photo_form = PhotoForm(request.POST, request.FILES)
@@ -51,7 +50,6 @@ def profile(request, user_id):
     photo_form = PhotoForm()
     message_form = SendMessageForm()
     return render(request, 'profile.html', {'user': user,
-                                            'message': message,
                                             'photo_form': photo_form,
                                             'message_form': message_form})
 
@@ -129,8 +127,12 @@ def del_photo(request, photo_id):
     return redirect('/profile/' + str(user.id) + '/')
 
 
-def message(request):
-    return render('message.html', {})
+def view_message(request, message_id):
+    """посмотреть переписку"""
+    message = Message.objects.select_related('sender', 'receiver').get(pk=message_id)
+    text_message = Message.objects.filter(sender=message.sender)
+    return render(request, 'message.html', {'message': message,
+                                            'text_message': text_message})
 
 
 def orders(request):

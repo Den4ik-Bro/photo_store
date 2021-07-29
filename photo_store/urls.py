@@ -9,8 +9,9 @@ urlpatterns = [
     path('profile/<int:user_id>/', include([
         path('', views.profile),
         path('edit/', views.edit_profile),
-        path('message/', views.message)
+
     ])),
+    path('message/<int:message_id>/', views.view_message),
     path('orders/', views.orders),
     path('order/<int:order_id>/', include([
         path('', views.get_order),
