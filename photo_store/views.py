@@ -33,6 +33,7 @@ def profile(request, user_id):
             Prefetch('message_set', Message.objects.select_related('sender', 'receiver').all())
         )\
         .get(pk=user_id)
+    message = Message.objects.filter(Q(sender=user) | Q(receiver=user))
     if request.method == 'POST':
         message_form = SendMessageForm(request.POST)
         photo_form = PhotoForm(request.POST, request.FILES)
@@ -50,8 +51,9 @@ def profile(request, user_id):
     photo_form = PhotoForm()
     message_form = SendMessageForm()
     return render(request, 'profile.html', {'user': user,
+                                            'message': message,
                                             'photo_form': photo_form,
-                                             'message_form': message_form})
+                                            'message_form': message_form})
 
 
 # def profile(request, user_id):
@@ -127,19 +129,8 @@ def del_photo(request, photo_id):
     return redirect('/profile/' + str(user.id) + '/')
 
 
-# def message(request):
-#     user = request.user
-#     messages = Message.objects.filter(Q(sender=user) | Q(receiver=user))
-#     form = MessageForm()
-#     if request.method == 'POST':
-#         form = MessageForm(request.POST)
-#         if form.is_valid():
-#             message = form.save(commit=False)
-#             message.sender = user
-#             message.save()
-#             return redirect('/profile/' + str(user.id) + 'message/')
-#     return render(request, 'message.html', {'messages': messages,
-#                                             'form': form})
+def message(request):
+    return render('message.html', {})
 
 
 def orders(request):

@@ -11,7 +11,9 @@
     <p><a href="edit/">Редактировать</a></p>
     <p><a href="/logout/">Выйти</a></p>
 {% endif %}
-
+<p>Загружено фотографий: {{ user.photo_set.count }}</p>
+<p>Создано заказов: {{ user.order_set.count }}</p>
+<p>Всего откликов на заказы: {{ user.response_set.count }}</p>
 <h2>Портфолио</h2>
 {% for photo in user.photo_set.all %}
     {% if not photo.response %}
@@ -31,9 +33,9 @@
 <h2>Сообщения</h2>
 {% if user.id == request.user.id %}
     {% for message in user.message_set.all %}
-        <p>Кто: {{ message.receiver }}</p>
-        <p>Текст: {{ message.text }}</p>
-        <p>Кому: {{ message.sender }}</p>
+        <p>Кто: {{ message.sender }}</p>
+        <p><a href="message/">Текст: {{ message.text }}</a></p>
+        <p>Кому: {{ message.receiver }}</p>
     ==============================================
     {% endfor %}
 {% else %}

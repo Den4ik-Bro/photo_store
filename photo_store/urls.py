@@ -9,6 +9,7 @@ urlpatterns = [
     path('profile/<int:user_id>/', include([
         path('', views.profile),
         path('edit/', views.edit_profile),
+        path('message/', views.message)
     ])),
     path('orders/', views.orders),
     path('order/<int:order_id>/', include([

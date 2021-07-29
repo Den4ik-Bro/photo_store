@@ -26,12 +26,14 @@
         <p>Вы уже оставили отклик на этот заказ</p>
         <p><a href="/orders/">назад</a></p>
     {% endif %}
-    {% if not accepted_response.rate or not accepted_response.comment %}
-        <form action="." method="POST">
-            {% csrf_token %}
-            {{ rate_response_form.as_p }}
-            <input type="submit" value="Оставить оценку">
-        </form>
+    {% if accepted_response and current_order.owner == user %}
+        {% if not accepted_response.rate or not accepted_response.comment %}
+            <form action="." method="POST">
+                {% csrf_token %}
+                {{ rate_response_form.as_p }}
+                <input type="submit" value="Оставить оценку">
+            </form>
+        {% endif %}
     {% endif %}
     {% if not accepted_response %}
         <h2>Откликнулись:</h2>
