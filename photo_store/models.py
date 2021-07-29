@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.contrib.auth.models import User
 import datetime
@@ -8,7 +9,7 @@ class Photo(models.Model):
     description = models.TextField(null=True, blank=True, verbose_name='описание фотографии')
     date_time = models.DateTimeField(verbose_name='дата', auto_now=True)
     photographer = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='фотограф')
-    response = models.ForeignKey('Response', on_delete=models.PROTECT, blank=True, null=True, verbose_name='ответ')
+    response = models.ForeignKey('Response', on_delete=models.PROTECT, blank=True, null=True, verbose_name='отклик')
     tags = models.ManyToManyField('Tag', verbose_name='имя тэга', blank=True)
 
     def __str__(self):
@@ -85,15 +86,16 @@ class Response(models.Model):
     text = models.TextField(verbose_name='текст_отклика')
     datetime = models.DateTimeField(verbose_name='дата', default=datetime.datetime.now)
     is_selected = models.BooleanField()
-    rate = models.PositiveSmallIntegerField(blank=True, null=True, verbose_name='оценка')
+    rate = models.PositiveSmallIntegerField(blank=True, null=True, verbose_name='оценка', validators=[MaxValueValidator(10),
+                                                                                                      MinValueValidator(1)])
     comment = models.TextField(blank=True, null=True, verbose_name='комментарий')
     order = models.ForeignKey(Order, on_delete=models.PROTECT, verbose_name='задача')
     photographer = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='фотограф')  # исполнитель
 
     def __str__(self):
-        return f'{self.order}'  # , фотограф {self.photographer}'
+        return f'отклик на заказ: {self.order}'  # , фотограф {self.photographer}'
 
     class Meta:
-        verbose_name = 'Ответ'
-        verbose_name_plural = 'Ответы'
+        verbose_name = 'Отклик'
+        verbose_name_plural = 'Отклики'
         ordering = ('-datetime',)
