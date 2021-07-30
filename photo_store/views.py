@@ -1,3 +1,4 @@
+from itertools import chain
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from .models import Photo, Message, Order, Topic, Response, Tag
@@ -130,9 +131,23 @@ def del_photo(request, photo_id):
 def view_message(request, message_id):
     """посмотреть переписку"""
     message = Message.objects.select_related('sender', 'receiver').get(pk=message_id)
-    text_message = Message.objects.filter(sender=message.sender)
+    text_message = Message.objects.select_related('sender', 'receiver').filter(sender=message.sender)
+    text_message_user = Message.objects.select_related('sender', 'receiver').filter(sender=request.user)
+    message_list = sorted(chain(text_message, text_message_user), key=lambda instance: instance.date_time)
+    form = SendMessageForm()
+    if request.method == 'POST':
+        form = SendMessageForm(request.POST)
+        if form.is_valid():
+            new_message = form.save(commit=False)
+            new_message.sender = request.user
+            new_message.receiver = message.sender
+            new_message.save()
+            return redirect('/message/' + str(message_id) + '/')
     return render(request, 'message.html', {'message': message,
-                                            'text_message': text_message})
+                                            # 'text_message': text_message,
+                                            # 'text_message_user': text_message_user,
+                                            'message_list': message_list,
+                                            'form': form})
 
 
 def orders(request):

@@ -3,11 +3,36 @@
 
 {% block content %}
 
-<p>{{ message.sender }}</p>
-{% for text in text_message %}
-    {% if text.receiver == request.user %}
+<!--<p>{{ message.sender }}</p>-->
+<!--{% for text in text_message %}-->
+<!--    {% if text.receiver == request.user %}-->
+<!--        <p>{{ text.date_time }}</p>-->
+<!--        <p>{{ text.text }}</p>-->
+<!--    {% endif %}-->
+<!--{% endfor %}-->
+
+<!--<p>{{ message.receiver }}</p>-->
+<!--{% for text in text_message_user %}-->
+<!--    {% if text.receiver ==  message.sender %}-->
+<!--        <p>{{ text.date_time }}</p>-->
+<!--        <p>{{ text.text }}</p>-->
+<!--    {% endif %}-->
+<!--{% endfor %}-->
+
+
+{% for text in message_list %}
+    {% if text.receiver == request.user or text.receiver ==  message.sender %}
+        <p>{{ text.sender }}</p>
         <p>{{ text.date_time }}</p>
         <p>{{ text.text }}</p>
     {% endif %}
 {% endfor %}
+
+
+<form action="." method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <p><input type="submit" value="Ответить"></p>
+</form>
+
 {% endblock %}
