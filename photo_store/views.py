@@ -34,6 +34,15 @@ def profile(request, user_id):
             Prefetch('message_set', Message.objects.select_related('sender', 'receiver').all())
         )\
         .get(pk=user_id)
+    get_message = Message.objects.select_related('sender', 'receiver').filter(receiver=user)
+    message_dict = {}
+    for i in get_message:   # получаем список сообщения каждого отправителя
+        message_dict[i.sender] = []
+        s = Message.objects.filter(sender=i.sender, receiver=user)
+        for j in s:
+            message_dict[i.sender].append(j.text)
+            message_dict[i.sender].append(j.id)
+    print(message_dict)
     if request.method == 'POST':
         message_form = SendMessageForm(request.POST)
         photo_form = PhotoForm(request.POST, request.FILES)
@@ -52,7 +61,8 @@ def profile(request, user_id):
     message_form = SendMessageForm()
     return render(request, 'profile.html', {'user': user,
                                             'photo_form': photo_form,
-                                            'message_form': message_form})
+                                            'message_form': message_form,
+                                            'message_dict': message_dict})
 
 
 # def profile(request, user_id):

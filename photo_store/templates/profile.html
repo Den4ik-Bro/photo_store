@@ -32,11 +32,13 @@
 
 <h2>Сообщения</h2>
 {% if user.id == request.user.id %}
-    {% for message in user.message_set.all %}
-        <p>{{ message.date_time }}</p>
-        <p>Кто: {{ message.sender }}</p>
-        <p>Текст: {{ message.text }}</p>
-        <form action="/message/{{ message.id }}" method="GET">
+    {% for key, value in message_dict.items %}
+        <p>{{ key }}</p>
+        <p>{{ value.0 }}</p>
+<!--        <p>{{ message.date_time }}</p>-->
+<!--        <p>Кто: {{ message.sender }}</p>-->
+<!--        <p>Текст: {{ message.text }}</p>-->
+        <form action="/message/{{ value.1 }}" method="GET">
             {% csrf_token %}
             <p><input type="submit" value="ответить"></p>
         </form>
@@ -55,19 +57,19 @@
 {% if user.id == request.user.id %}
     <h2>Мои заказы</h2>
     <p>{% for order in user.order_set.all %}</p>
-            <a href="/order/{{order.id}}">{{order}}</a>
+            <a href="/order/{{ order.id }}">{{order}}</a>
         {% endfor %}
 {% else %}
     <h2>Заказы</h2>
     <p>{% for order in user.order_set.all %}</p>
-            <a href="/order/{{order.id}}">{{order}}</a>
+            <a href="/order/{{ order.id }}">{{order}}</a>
         {% endfor %}
     {% endif %}
 
 {% if user.id == request.user.id %}
     <h2>Мои отклики</h2>
     <p>{% for my_response in user.response_set.all %}</p>
-            <p><a href="/order/{{my_response.order.id}}">{{my_response}}</a></p>
+            <p><a href="/order/{{ my_response.order.id }}">{{my_response}}</a></p>
     {% endfor %}
 {% endif %}
 {% endblock %}
