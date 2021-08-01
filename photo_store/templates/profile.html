@@ -34,16 +34,16 @@
 {% if user.id == request.user.id %}
     {% for key, value in message_dict.items %}
         <p>{{ key }}</p>
-        <p>{{ value.0 }}</p>
+        <p>{{ value.0.text }}</p>
 <!--        <p>{{ message.date_time }}</p>-->
 <!--        <p>Кто: {{ message.sender }}</p>-->
 <!--        <p>Текст: {{ message.text }}</p>-->
-        <form action="/message/{{ value.1 }}" method="GET">
+        <form action="/message/{{ value.0.id }}" method="GET">
             {% csrf_token %}
             <p><input type="submit" value="ответить"></p>
         </form>
 <!--        <p>Кому: {{ message.receiver }}</p>-->
-    ==============================================
+    <hr>
     {% endfor %}
 {% else %}
     <form action="." method="POST">

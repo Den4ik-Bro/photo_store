@@ -22,13 +22,12 @@
 
 {% for text in message_list %}
     {% if text.receiver == request.user or text.receiver ==  message.sender %}
-        <p>{{ text.sender }}</p>
+        <p><b>{{ text.sender }}</b></p>
         <p>{{ text.date_time }}</p>
         <p>{{ text.text }}</p>
+        <hr>
     {% endif %}
 {% endfor %}
-
-
 <form action="." method="POST">
     {% csrf_token %}
     {{ form.as_p }}

@@ -40,9 +40,8 @@ def profile(request, user_id):
         message_dict[i.sender] = []
         s = Message.objects.filter(sender=i.sender, receiver=user)
         for j in s:
-            message_dict[i.sender].append(j.text)
-            message_dict[i.sender].append(j.id)
-    print(message_dict)
+            message_dict[i.sender].append(j)
+            # message_dict[i.sender].append(j.id)
     if request.method == 'POST':
         message_form = SendMessageForm(request.POST)
         photo_form = PhotoForm(request.POST, request.FILES)
