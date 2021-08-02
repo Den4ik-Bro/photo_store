@@ -11,6 +11,18 @@
     <p><a href="edit/">Редактировать</a></p>
     <p><a href="/logout/">Выйти</a></p>
 {% endif %}
+<!--<table>-->
+<!--    <tr>-->
+<!--        <th>Загружено фотографий</th>-->
+<!--        <th>Создано заказов</th>-->
+<!--        <th>Всего откликов на заказы</th>-->
+<!--    </tr>-->
+<!--    <tr>-->
+<!--        <td>{{ user.photo_set.count }}</td>-->
+<!--        <td>{{ user.order_set.count }}</td>-->
+<!--        <td>{{ user.response_set.count }}</td>-->
+<!--    </tr>-->
+<!--</table>-->
 <p>Загружено фотографий: {{ user.photo_set.count }}</p>
 <p>Создано заказов: {{ user.order_set.count }}</p>
 <p>Всего откликов на заказы: {{ user.response_set.count }}</p>
