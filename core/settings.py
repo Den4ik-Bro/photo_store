@@ -131,7 +131,7 @@ MEDIA_ROOT = 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = '/profile/'  # '/profile/<int:user_id>/'
 LOGOUT_REDIRECT_URL = '/login/'
-
+# AUTH_USER_MODEL = 'photo_store.User'
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

@@ -1,7 +1,16 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AbstractUser
 import datetime
+# from django.conf import settings
+
+
+# class User(AbstractUser):
+#     is_photographer = models.BooleanField(default=False, null=True, verbose_name='Если выбрано вы фотограф,'
+#                                                                                  ' нет - заказчик')
+
+
+# User = settings.AUTH_USER_MODEL
 
 
 class Photo(models.Model):
