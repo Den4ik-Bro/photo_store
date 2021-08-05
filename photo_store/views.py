@@ -7,10 +7,10 @@ from django.db.models import Q, Prefetch
 from .forms import ProfileForm, OrderForm, ResponseForm, PhotoForm, SendMessageForm, RegistrationUserForm, TagForm, \
     RateResponseForm
 from django.forms.models import model_to_dict
-# from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model
 
 
-# User = get_user_model()
+User = get_user_model()
 
 
 def main(request):
