@@ -5,7 +5,7 @@
     <h1>{{current_order.topic.name}}</h1>
     <p>Описание: {{current_order.text}}</p>
     <p>Цена: {{current_order.price}}</p>
-    {% if not is_user_has_response and current_order.owner != user %}
+    {% if not is_user_has_response and current_order.owner != user and not accepted_response%}
         <form action="." method="POST">
             {% csrf_token %}
             <h2>Отклик на заказ:</h2>
@@ -22,6 +22,8 @@
         <p>Это ваш заказ</p>
         <p><a href="/orders/">назад</a></p>
 <!--        <p><a href="edit/">Редактировать</a></p>-->
+    {% elif current_order.owner != user and accepted_response %}
+        <p>Заказ закрыт для откликов</p>
     {% else %}
         <p>Вы уже оставили отклик на этот заказ</p>
         <p><a href="/orders/">назад</a></p>
