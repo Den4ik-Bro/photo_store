@@ -6,9 +6,6 @@
     <h1>Добро пожаловать на наш проект по поиску фотографов</h1>
     <p><a href="/login/">Вход</a></p>
     <p><a href="/register/">Регистрация</a></p>
-    <p><h3>Наши специалисты:</h3></p>
-    {% for user in users %}
-        <a href="/profile/{{ user.id }}"><p>{{ user }}</p></a>
-    {% endfor %}
+    <h3><p><a href="photographers/">Поиск фотографа<a/></p></h3>
 
 {% endblock %}

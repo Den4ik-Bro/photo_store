@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %} Фотографы {% endblock %}
+
+{% block content %}
+
+    <p><h3>Фотографы:</h3></p>
+    {% for user in users %}
+        <a href="/profile/{{ user.id }}"><p>{{ user }}</p></a>
+    {% endfor %}
+
+{% endblock %}

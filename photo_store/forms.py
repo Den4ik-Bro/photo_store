@@ -1,5 +1,5 @@
 from django import forms
-from .models import Order, Response, Photo, Message, User, Tag
+from .models import Order, Response, Photo, Message, User, Tag, User
 
 
 class ProfileForm(forms.Form):
@@ -79,7 +79,8 @@ class RegistrationUserForm(forms.ModelForm):
                 'username',
                 'first_name',
                 'last_name',
-                'email'
+                'email',
+                'is_photographer'
             ]
 
 

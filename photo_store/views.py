@@ -1,5 +1,4 @@
 from itertools import chain
-# from django.conf import settings
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from .models import Photo, Message, Order, Topic, Response, Tag
@@ -8,7 +7,7 @@ from .forms import ProfileForm, OrderForm, ResponseForm, PhotoForm, SendMessageF
     RateResponseForm
 from django.forms.models import model_to_dict
 from django.contrib.auth import get_user_model
-
+from random import shuffle
 
 User = get_user_model()
 
@@ -43,7 +42,7 @@ def profile(request, user_id):
     message_dict = {}
     for i in get_message:   # получаем список сообщения каждого отправителя
         message_dict[i.sender] = []
-        s = Message.objects.filter(sender=i.sender, receiver=user)
+        s = Message.objects.select_related('sender', 'receiver').filter(sender=i.sender, receiver=user)
         for j in s:
             message_dict[i.sender].append(j)
             # message_dict[i.sender].append(j.id)
@@ -142,6 +141,12 @@ def del_photo(request, photo_id):
     return redirect('/profile/' + str(user.id) + '/')
 
 
+def photographers(request):
+    """список пользователей которые являются фотографами"""
+    user = User.objects.filter(is_photographer=True)
+    return render(request, 'photographers.html', {'users': user})
+
+
 def view_message(request, message_id):
     """посмотреть переписку"""
     message = Message.objects.select_related('sender', 'receiver').get(pk=message_id)
@@ -203,6 +208,7 @@ def get_order(request, order_id):
                                 )\
                             .get(id=order_id)
     # responses = Response.objects.filter(order=order)  # все объекты респонса по этому заказу
+
     is_user_has_response = order.response_set.filter(photographer=request.user).exists()
     accepted_response = order.response_set.filter(is_selected=True).first()
     if request.method == 'POST':  # добавить отклик
@@ -241,8 +247,12 @@ def get_order(request, order_id):
                'photo_form': photo_form,
                'rate_response_form': rate_response_form}
     if accepted_response:
-        photos = Photo.objects.filter(response=accepted_response)
+        photos = Photo.objects.select_related('response', 'photographer').filter(response=accepted_response)
         context['photo'] = photos
+    else:
+        photos = Photo.objects.only('image').filter(response__isnull=False)
+        # photos = order.topic_set.filter(name=order.topic)
+        context['photo'] = photos[:3]
     return render(request, 'order_info.html', context)
 
 
