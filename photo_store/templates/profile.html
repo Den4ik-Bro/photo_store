@@ -27,7 +27,7 @@
 <p>Создано заказов: {{ user.order_set.count }}</p>
 <p>Всего откликов на заказы: {{ user.response_set.count }}</p>
 {% if user.is_photographer %}
-    <p>Рэйтинг: {{ user.avg_rate }}</p>
+    <p>Рейтинг: {{ user.avg_rate }}</p>
 {% endif %}
 <h2>Портфолио</h2>
 {% for photo in user.photo_set.all %}
