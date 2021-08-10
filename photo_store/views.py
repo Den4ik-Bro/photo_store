@@ -36,7 +36,7 @@ def profile(request, user_id):
         (
             Prefetch('message_set', Message.objects.select_related('sender', 'receiver').all())
         )\
-        .get(pk=user_id)
+        .annotate(avg_rate=Avg('response__rate')).get(pk=user_id)
     get_message = Message.objects.select_related('sender', 'receiver').filter(receiver=user)
     message_dict = {}
     for i in get_message:   # получаем список сообщения каждого отправителя
