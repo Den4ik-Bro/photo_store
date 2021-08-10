@@ -41,10 +41,12 @@
         <h2>Откликнулись:</h2>
             {% if current_order.owner == request.user %}
                 {% for response in current_order.response_set.all %}
+                    <p>Рейтинг фотографа: {{ response.photographer.avg_rate }}</p>
+{{ response.photographer.response_set.all }}
                     <a href="/profile/{{ response.photographer.id }}"><p>{{ response.photographer }}</p></a>
                     <p>{{ response.text }}</p>
                     <p>Мои работы:</p>
-                    {% for photo in photo %}
+                    {% for photo in photo_list %}
                         {% if photo.photographer == response.photographer and photo.response and photo.response.order.topic == current_order.topic %}
                             <a href="/order/{{ photo.response.order_id }}"><img src="{{ photo.image.url }}" style="width: 15%"></a>
                         {% endif %}

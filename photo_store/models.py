@@ -1,6 +1,6 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.contrib.auth.models import User, AbstractUser
+from django.contrib.auth.models import AbstractUser
 import datetime
 
 
@@ -91,8 +91,14 @@ class Response(models.Model):
     text = models.TextField(verbose_name='текст_отклика')
     datetime = models.DateTimeField(verbose_name='дата', default=datetime.datetime.now)
     is_selected = models.BooleanField()
-    rate = models.PositiveSmallIntegerField(blank=True, null=True, verbose_name='оценка', validators=[MaxValueValidator(10),
-                                                                                                      MinValueValidator(1)])
+    rate = models.PositiveSmallIntegerField\
+        (
+            default=0,
+            blank=True,
+            null=True,
+            verbose_name='оценка',
+            validators=[MaxValueValidator(10), MinValueValidator(1)]
+        )
     comment = models.TextField(blank=True, null=True, verbose_name='комментарий')
     order = models.ForeignKey(Order, on_delete=models.PROTECT, verbose_name='задача')
     photographer = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='фотограф')  # исполнитель

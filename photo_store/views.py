@@ -2,20 +2,19 @@ from itertools import chain
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from .models import Photo, Message, Order, Topic, Response, Tag
-from django.db.models import Q, Prefetch
+from django.db.models import Q, Prefetch, Avg, Count
 from .forms import ProfileForm, OrderForm, ResponseForm, PhotoForm, SendMessageForm, RegistrationUserForm, TagForm, \
     RateResponseForm
 from django.forms.models import model_to_dict
-from django.contrib.auth import get_user_model
-from random import shuffle
+from django.contrib.auth import get_user_model, authenticate, login
+
 
 User = get_user_model()
 
 
 def main(request):
     """Главная страница"""
-    users = User.objects.all()
-    return render(request, 'main.html', {'users': users})
+    return render(request, 'main.html')
 
 
 def profile_login(request):
@@ -144,7 +143,13 @@ def del_photo(request, photo_id):
 def photographers(request):
     """список пользователей которые являются фотографами"""
     user = User.objects.filter(is_photographer=True)
-    return render(request, 'photographers.html', {'users': user})
+    # dict = {}
+    # for current_user in user:
+    #     dict[current_user.id]= current_user.response_set.aggregate(Avg('rate'))
+    # print(dict)
+    return render(request, 'photographers.html', {'users': user,
+                                                  # 'dict': dict
+                                                  })
 
 
 def view_message(request, message_id):
@@ -201,16 +206,33 @@ def orders(request):
 def get_order(request, order_id):
     """просмотр заказа и добавление отклика на заказ"""
     order = Order.objects.only('topic', 'owner', 'price', 'text')\
-                            .select_related('topic', 'owner')\
-                            .prefetch_related\
-                                (
-                                    Prefetch('response_set', Response.objects.select_related('photographer').all())
-                                )\
-                            .get(id=order_id)
-    # responses = Response.objects.filter(order=order)  # все объекты респонса по этому заказу
-
+                        .select_related('topic', 'owner')\
+                        .prefetch_related\
+                            (
+                                Prefetch
+                                    (
+                                        'response_set',
+                                        Response.objects.prefetch_related
+                                            (
+                                                Prefetch
+                                                    (
+                                                        'photographer',
+                                                        User.objects.filter(is_photographer=True)\
+                                                                    .prefetch_related
+                                                                        (
+                                                                            Prefetch
+                                                                                (
+                                                                                    'response_set',
+                                                                                    Response.objects.filter(is_selected=True)
+                                                                                 )
+                                                                        )
+                                                                    .annotate(avg_rate=Avg('response__rate')))
+                                            ))
+                            )\
+                        .get(id=order_id)
     is_user_has_response = order.response_set.filter(photographer=request.user).exists()
     accepted_response = order.response_set.filter(is_selected=True).first()
+    # rate_photographer = Response.objects.filter(photographer=user).aggregate(Avg('rate')) средний рейтинг фотографа
     if request.method == 'POST':  # добавить отклик
         form = ResponseForm(request.POST)
         photo_form = PhotoForm(request.POST, request.FILES)
@@ -248,11 +270,12 @@ def get_order(request, order_id):
                'rate_response_form': rate_response_form}
     if accepted_response:
         photos = Photo.objects.select_related('response', 'photographer').filter(response=accepted_response)
-        context['photo'] = photos
+        context['photo_list'] = photos
     else:
-        photos = Photo.objects.only('image').filter(response__isnull=False)
-        # photos = order.topic_set.filter(name=order.topic)
-        context['photo'] = photos[:3]
+        photos = Photo.objects.only('image').order_by('?').filter(response__isnull=False)
+        #  user.response_set.aggregate(Avg('rate')))
+        context['photo_list'] = photos[:1]
+        # context['rate'] =
     return render(request, 'order_info.html', context)
 
 
@@ -345,7 +368,9 @@ def registration(request):
             if form.cleaned_data['password_1'] == form.cleaned_data['password_2']:
                 user.set_password(form.cleaned_data['password_1'])
                 user.save()
-                return redirect('/login/')
+                login_user = authenticate(request, username=user.username, password=form.cleaned_data['password_1'])
+                login(request, login_user)
+                return redirect('/profile/' + str(user.id) + '/')
     else:
         form = RegistrationUserForm()
     return render(request, 'register.html', {'form': form})
