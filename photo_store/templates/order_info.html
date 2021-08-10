@@ -42,7 +42,6 @@
             {% if current_order.owner == request.user %}
                 {% for response in current_order.response_set.all %}
                     <p>Рейтинг фотографа: {{ response.photographer.avg_rate }}</p>
-{{ response.photographer.response_set.all }}
                     <a href="/profile/{{ response.photographer.id }}"><p>{{ response.photographer }}</p></a>
                     <p>{{ response.text }}</p>
                     <p>Мои работы:</p>

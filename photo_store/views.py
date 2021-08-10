@@ -142,13 +142,8 @@ def del_photo(request, photo_id):
 
 def photographers(request):
     """список пользователей которые являются фотографами"""
-    user = User.objects.filter(is_photographer=True)
-    # dict = {}
-    # for current_user in user:
-    #     dict[current_user.id]= current_user.response_set.aggregate(Avg('rate'))
-    # print(dict)
+    user = User.objects.filter(is_photographer=True).annotate(avg_rate=Avg('response__rate'))
     return render(request, 'photographers.html', {'users': user,
-                                                  # 'dict': dict
                                                   })
 
 

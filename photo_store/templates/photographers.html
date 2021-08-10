@@ -6,6 +6,17 @@
     <p><h3>Фотографы:</h3></p>
     {% for user in users %}
         <a href="/profile/{{ user.id }}"><p>{{ user }}</p></a>
+        <p>Рейтинг: {{ user.avg_rate }}</p>
+        <p>Коментарии: {% for response in user.response_set.all %}</p>
+                           <a href="/order/{{ response.order.id }}/">{{ response.comment }}</a>
+                        {% endfor %}
+    <p>Пригласите фотографа в заказ</p>
+<!--надо написать условие что у текущего юзера есть заказы, потом форма пускай отправляет сообщение выбранному юзеру-->
+<!--not request.user.is_authenticated пригодится-->
+    <form action="." method="POST">
+        {% csrf_token %}
+        <input type="submit" value="Пригласить">
+    </form>
     {% endfor %}
 
 {% endblock %}
