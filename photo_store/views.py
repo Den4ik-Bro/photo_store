@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from .models import Photo, Message, Order, Topic, Response, Tag
 from django.db.models import Q, Prefetch, Avg, Count
 from .forms import ProfileForm, OrderForm, ResponseForm, PhotoForm, SendMessageForm, RegistrationUserForm, TagForm, \
-    RateResponseForm
+    RateResponseForm, InviteForm
 from django.forms.models import model_to_dict
 from django.contrib.auth import get_user_model, authenticate, login
 
@@ -102,17 +102,13 @@ def profile(request, user_id):
 
 def edit_profile(request, user_id):
     """редактирование профиля"""
-    form = ProfileForm()
+    if user_id != request.user.id:
+        return redirect('/profile/')
+    user = request.user
+    form = ProfileForm(instance=user)
     if request.method == 'POST':
-        user = request.user
-        # user.first_name = request.POST['first_name']
-        # user.last_name = request.POST['last_name']
-        # user.email = request.POST['email']
-        form = ProfileForm(request.POST)
+        form = ProfileForm(request.POST, instance=user)
         if form.is_valid():
-            user.first_name = form.cleaned_data['firstname']
-            user.last_name = form.cleaned_data['lastname']
-            user.email = form.cleaned_data['email']
             user.save()
             return redirect('/profile/' + str(user.id) + '/')
     return render(request, 'edit_profile.html', {'profile_form': form})
@@ -143,8 +139,24 @@ def del_photo(request, photo_id):
 def photographers(request):
     """список пользователей которые являются фотографами"""
     user = User.objects.filter(is_photographer=True).annotate(avg_rate=Avg('response__rate'))
+    order = Order.objects.filter(owner=request.user)
+    form = InviteForm(request.user)
     return render(request, 'photographers.html', {'users': user,
+                                                  'orders': order,
+                                                  'form': form
                                                   })
+
+
+def invite_to_order(request, user_id):
+    # # if request.method == 'POST':
+    # message = Message.objects.create(
+    #     text='фывфыв',
+    #     sender=request.user,
+    #     receiver=user_id,
+    # )
+    # message.save()
+    return redirect('/photographers/')
+    # # return redirect('/photographers/')
 
 
 def view_message(request, message_id):
@@ -266,6 +278,7 @@ def get_order(request, order_id):
     if accepted_response:
         photos = Photo.objects.select_related('response', 'photographer').filter(response=accepted_response)
         context['photo_list'] = photos
+        print(photos)
     else:
         photos = Photo.objects.only('image').order_by('?').filter(response__isnull=False)
         #  user.response_set.aggregate(Avg('rate')))

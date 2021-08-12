@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path('', views.main),
     path('photographers/', views.photographers),
+    path('/invite_to_order/<int:user_id>/', views.invite_to_order),
     path('tag_photos/<int:tag_id>/', views.tag_photos),
     path('profile/', views.profile_login),
     path('profile/<int:user_id>/', include([

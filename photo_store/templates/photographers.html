@@ -10,13 +10,15 @@
         <p>Коментарии: {% for response in user.response_set.all %}</p>
                            <a href="/order/{{ response.order.id }}/">{{ response.comment }}</a>
                         {% endfor %}
-    <p>Пригласите фотографа в заказ</p>
-<!--надо написать условие что у текущего юзера есть заказы, потом форма пускай отправляет сообщение выбранному юзеру-->
-<!--not request.user.is_authenticated пригодится-->
-    <form action="." method="POST">
-        {% csrf_token %}
-        <input type="submit" value="Пригласить">
-    </form>
+        {% if request.user.id != user.id %}
+            <p>Пригласите фотографа в заказ</p>
+            <form action="/invite_to_order/{{ user.id }}/" method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input type="submit" value="Пригласить">
+            </form>
+        {% endif %}
+        <hr>
     {% endfor %}
 
 {% endblock %}

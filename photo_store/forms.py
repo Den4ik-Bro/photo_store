@@ -1,16 +1,24 @@
 from django import forms
-from .models import Order, Response, Photo, Message, User, Tag, User
+from .models import Order, Response, Photo, Message, Tag
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
-class ProfileForm(forms.Form):
-    firstname = forms.CharField(label='Имя:', max_length=10)
-    lastname = forms.CharField(label='Фамилия', max_length=20)
-    email = forms.EmailField(required=False)
+# class ProfileForm(forms.Form):
+#     firstname = forms.CharField(label='Имя:', max_length=10)
+#     lastname = forms.CharField(label='Фамилия', max_length=20)
+#     email = forms.EmailField(required=False)
 
 
 # class OrderForm(forms.Form):
 #     text = forms.CharField(label='Текст заказа', widget=forms.Textarea)
 #     price = forms.IntegerField(label='Цена')
+
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'email')
 
 
 class OrderForm(forms.ModelForm):
@@ -90,3 +98,9 @@ class TagForm(forms.ModelForm):
         fields = ['name']
 
 
+class InviteForm(forms.Form):
+    orders = forms.ModelChoiceField(queryset=None, label='заказ')
+
+    def __init__(self, owner):
+        super().__init__()
+        self.fields['orders'].queryset=Order.objects.filter(owner=owner)

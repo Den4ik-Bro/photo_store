@@ -62,12 +62,12 @@
         <p>Исполнитель: <a href="/profile/{{ accepted_response.photographer.id }}">{{ accepted_response.photographer }}</a></p>
         {% if not current_order.is_public and current_order.owner == request.user or accepted_response.photographer == request.user%}
             <p><h2>Фотографии:</h2></p>
-            {% for photo in photo %}
+            {% for photo in photo_list %}
                 <img src="{{ photo.image.url }}" style="width: 15%">
             {% endfor %}
         {% elif current_order.is_public %}
             <p><h2>Фотографии:</h2></p>
-            {% for photo in photo %}
+            {% for photo in photo_list %}
                 <img src="{{ photo.image.url }}" style="width: 15%">
             {% endfor %}
         {% else %}
