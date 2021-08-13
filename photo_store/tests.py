@@ -2,6 +2,8 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.db.models import Max, F
 from .models import Order, Topic, Response, Photo, Message
+from .forms import PhotoForm
+from PIL import Image
 
 
 User = get_user_model()
@@ -142,3 +144,14 @@ class ProfileTest(TestCase):
         # user_messages = self.user_1.sent_messages\
         #     .annotate(last_date=Max('date_time')).filter(date_time=F('last_date')) #+ self.user_1.received_messages.all()
         # print(user_messages)
+
+    def test_photo_append(self):
+        image = Image.open('media/test/test_test.jpg')
+        form = PhotoForm()
+        form['image'] = image
+        form['description'] = 'dfdgfd'
+        self.client.login(username='test1', password='test123')
+        self.client.post('/profile/' + str(self.user_1.id) + '/', date=form)
+
+
+
