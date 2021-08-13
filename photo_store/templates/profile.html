@@ -71,20 +71,17 @@
 
 {% if user.id == request.user.id %}
     <h2>Мои заказы</h2>
-    <p>{% for order in user.order_set.all %}</p>
-            <a href="/order/{{ order.id }}">{{order}}</a>
-        {% endfor %}
 {% else %}
     <h2>Заказы</h2>
-    <p>{% for order in user.order_set.all %}</p>
-            <a href="/order/{{ order.id }}">{{order}}</a>
+{% endif %}
+    {% for order in user.order_set.all %}
+            <a href="/order/{{ order.id }}">{{ order }}</a>
         {% endfor %}
-    {% endif %}
 
 {% if user.id == request.user.id %}
     <h2>Мои отклики</h2>
-    <p>{% for my_response in user.response_set.all %}</p>
-            <p><a href="/order/{{ my_response.order.id }}">{{my_response}}</a></p>
+    {% for my_response in user.response_set.all %}
+            <p><a href="/order/{{ my_response.order.id }}">{{ my_response }}</a></p>
     {% endfor %}
 {% endif %}
 {% endblock %}

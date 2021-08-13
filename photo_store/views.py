@@ -34,7 +34,7 @@ def profile(request, user_id):
         )\
         .prefetch_related\
         (
-            Prefetch('message_set', Message.objects.select_related('sender', 'receiver').all())
+            Prefetch('received_messages', Message.objects.select_related('sender', 'receiver').all())
         )\
         .annotate(avg_rate=Avg('response__rate')).get(pk=user_id)
     get_message = Message.objects.select_related('sender', 'receiver').filter(receiver=user)

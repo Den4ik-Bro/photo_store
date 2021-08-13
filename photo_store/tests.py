@@ -1,7 +1,8 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.db.models import Max, F
+from .models import Order, Topic, Response, Photo, Message
 
-from photo_store.models import Order, Topic, Response, Photo
 
 User = get_user_model()
 
@@ -62,12 +63,11 @@ class ProfileTest(TestCase):
         )
         self.user_1.save()
 
-        user_2 = User.objects.create_user(
+        self.user_2 = User.objects.create_user(
             username='test2',
             password='test12345',
             is_photographer=True
         )
-        user_2.save()
 
         self.photo = Photo.objects.create(
             image='photo/test_photo_1',
@@ -88,7 +88,7 @@ class ProfileTest(TestCase):
 
         order_2 = Order.objects.create(
             topic=topic,
-            owner=user_2,
+            owner=self.user_2,
             price=2000,
             is_public=True,
         )
@@ -101,9 +101,44 @@ class ProfileTest(TestCase):
         )
         response.save()
 
+        Message.objects.create(
+            sender=self.user_1,
+            receiver=self.user_2,
+            text='sadas',
+        )
+
+        Message.objects.create(
+            sender=self.user_2,
+            receiver=self.user_1,
+            text='sadsdfdsf',
+        )
+
+        Message.objects.create(
+            sender=self.user_1,
+            receiver=self.user_2,
+            text='qwerty',
+        )
+
+        Message.objects.create(
+            sender=self.user_2,
+            receiver=self.user_1,
+            text='bvnnbmnbm',
+        )
+
     def test_view_profile(self):
         self.client.login(username='test1', password='test123')
         server_response = self.client.get('/profile/' + str(self.user_1.id) + '/')
         self.assertEqual(server_response.status_code, 200)
-        self.assertTrue(self.photo in self.user_1.photo_set.filter(photographer=self.user_1))
+        self.assertEqual(self.user_1, server_response.context['user'])
         self.assertTemplateUsed(server_response, 'profile.html')
+        self.assertContains(server_response, self.photo.image.url)
+        self.assertContains(server_response, self.user_1.first_name)
+        self.assertContains(server_response, self.user_1.last_name)
+        self.assertContains(server_response, self.user_1.email)
+        for order in self.user_1.order_set.all():
+            self.assertContains(server_response, order)
+        for response in self.user_1.response_set.all():
+            self.assertContains(server_response, response)
+        # user_messages = self.user_1.sent_messages\
+        #     .annotate(last_date=Max('date_time')).filter(date_time=F('last_date')) #+ self.user_1.received_messages.all()
+        # print(user_messages)
