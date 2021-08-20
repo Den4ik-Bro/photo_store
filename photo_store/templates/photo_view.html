@@ -6,7 +6,7 @@
         <p><img src="{{current_photo.image.url}}"></p>
         <p>{{ current_photo.description }}</p>
         {% for tag in current_photo.tags.all %}
-                <a href="/tag_photos/{{ tag.id }}/">#{{ tag.name }}</a>
+                <a href="{% url 'photo_store:tag_photos' tag_id=tag.id %}">#{{ tag.name }}</a>
         {% endfor %}
         <form action="." method="POST">
                 {% csrf_token %}

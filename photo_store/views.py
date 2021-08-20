@@ -399,7 +399,7 @@ def registration(request):
                 user.save()
                 login_user = authenticate(request, username=user.username, password=form.cleaned_data['password_1'])
                 login(request, login_user)
-                return redirect('/profile/' + str(user.id) + '/')
+                return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
     else:
         form = RegistrationUserForm()
     return render(request, 'register.html', {
