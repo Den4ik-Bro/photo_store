@@ -11,7 +11,7 @@ urlpatterns = [
     path('profile/', views.profile_login),
     path('profile/<int:user_id>/', include([
         path('', views.profile, name='show_profile'),
-        path('edit/', views.edit_profile),
+        path('edit/', views.edit_profile, name='edit_profile'),
 
     ])),
     path('message/<int:conversationer_id>/', views.view_message, name='show_messages'),

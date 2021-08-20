@@ -52,13 +52,13 @@ def profile(request, user_id):
             photo = photo_form.save(commit=False)
             photo.photographer = request.user
             photo.save()
-            return redirect('/profile/' + str(user.id) + '/')
+            return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
         if message_form.is_valid():
             message = message_form.save(commit=False)
             message.sender = request.user
             message.receiver = User.objects.get(id=user_id)
             message.save()
-            return redirect('/profile/' + str(user.id) + '/')
+            return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
     photo_form = PhotoForm()
     message_form = SendMessageForm()
     return render(request, 'profile.html', {'user': user,
@@ -103,14 +103,14 @@ def profile(request, user_id):
 def edit_profile(request, user_id):
     """редактирование профиля"""
     if user_id != request.user.id:
-        return redirect('/profile/')
+        return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
     user = request.user
     form = ProfileForm(instance=user)
     if request.method == 'POST':
         form = ProfileForm(request.POST, instance=user)
         if form.is_valid():
             user.save()
-            return redirect('/profile/' + str(user.id) + '/')
+            return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
     return render(request, 'edit_profile.html', {'profile_form': form})
 
 

@@ -8,7 +8,7 @@
     <p>Фамилия: {{ user.last_name }}</p>
     <p>Email: {{ user.email }}</p>
 {% if user.id == request.user.id %}
-    <p><a href="edit/">Редактировать</a></p>
+    <p><a href="{% url 'photo_store:edit_profile' user_id=user.id %}">Редактировать</a></p>
     <p><a href="/logout/">Выйти</a></p>
 {% endif %}
 <!--<table>-->
