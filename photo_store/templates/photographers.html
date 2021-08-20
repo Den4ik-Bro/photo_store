@@ -14,7 +14,7 @@
                         {% endfor %}
         {% if request.user.id != user.id %}
             <p>Пригласите фотографа в заказ</p>
-            <form action="/invite_to_order/{{ user.id }}/" method="POST">
+            <form action="{% url 'photo_store:invite_to_order' user_id=user.id %}" method="POST">
                 {% csrf_token %}
                 {{ form.as_p }}
                 <input type="submit" value="Пригласить">

@@ -160,7 +160,7 @@ def invite_to_order(request, user_id):
                 text=f'{request.user} приглащает вас на съемку <a href="{order_url}">{order}</a>'
             )
             return redirect(order_url)
-    return redirect('/photographers/')
+    return redirect(reverse('photographers'))
 
 
 def view_message(request, conversationer_id):
