@@ -61,10 +61,12 @@ def profile(request, user_id):
             return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
     photo_form = PhotoForm()
     message_form = SendMessageForm()
-    return render(request, 'profile.html', {'user': user,
-                                            'photo_form': photo_form,
-                                            'message_form': message_form,
-                                            'message_dict': message_dict})
+    return render(request, 'profile.html', {
+        'user': user,
+        'photo_form': photo_form,
+        'message_form': message_form,
+        'message_dict': message_dict
+    })
 
 
 # def profile(request, user_id):
@@ -111,7 +113,9 @@ def edit_profile(request, user_id):
         if form.is_valid():
             user.save()
             return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
-    return render(request, 'edit_profile.html', {'profile_form': form})
+    return render(request, 'edit_profile.html', {
+        'profile_form': form
+    })
 
 
 # def add_photo(request):
@@ -139,12 +143,11 @@ def del_photo(request, photo_id):
 def photographers(request):
     """список пользователей которые являются фотографами"""
     user = User.objects.filter(is_photographer=True).annotate(avg_rate=Avg('response__rate'))
-    # order = Order.objects.filter(owner=request.user)
     form = InviteForm(request.user)
-    return render(request, 'photographers.html', {'users': user,
-                                                  # 'orders': order,
-                                                  'form': form
-                                                  })
+    return render(request, 'photographers.html', {
+        'users': user,
+        'form': form
+      })
 
 
 def invite_to_order(request, user_id):
@@ -202,8 +205,10 @@ def orders(request):
             order.save()
             return redirect('/profile/' + str(order.owner.id) + '/')
     form = OrderForm()
-    return render(request, 'orders.html', {'user_orders': orders,
-                                           'form': form})
+    return render(request, 'orders.html', {
+        'user_orders': orders,
+        'form': form
+    })
 
 
 # def add_order(request):
@@ -326,7 +331,9 @@ def edit_order(request, order_id):
             return redirect('/order/' + str(order.id) + '/')
     else:
         form = OrderForm(initial=model_to_dict(order))
-    return render(request, 'edit_order.html', {'order_form': form})
+    return render(request, 'edit_order.html', {
+        'order_form': form
+    })
 
 
 def del_order(request, order_id):
@@ -367,14 +374,18 @@ def photo_view(request, photo_id):
             tag, created = Tag.objects.get_or_create(name=form.cleaned_data['name'])
             photo.tags.add(tag)
     form = TagForm()
-    return render(request, 'photo_view.html', {'current_photo': photo,
-                                               'form': form})
+    return render(request, 'photo_view.html', {
+        'current_photo': photo,
+        'form': form
+    })
 
 
 def tag_photos(request, tag_id):
     """тэги фотографии"""
     tag = Tag.objects.get(id=tag_id)
-    return render(request, 'tag_photos.html', {'tag': tag})
+    return render(request, 'tag_photos.html', {
+        'tag': tag
+    })
 
 
 def registration(request):
@@ -391,6 +402,8 @@ def registration(request):
                 return redirect('/profile/' + str(user.id) + '/')
     else:
         form = RegistrationUserForm()
-    return render(request, 'register.html', {'form': form})
+    return render(request, 'register.html', {
+        'form': form
+    })
 
 
