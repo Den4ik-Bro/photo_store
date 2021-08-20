@@ -15,7 +15,7 @@ urlpatterns = [
 
     ])),
     path('message/<int:conversationer_id>/', views.view_message, name='show_messages'),
-    path('orders/', views.orders),
+    path('orders/', views.orders, name='orders'),
     path('order/<int:order_id>/', include([
         path('', views.get_order),
         path('edit/', views.edit_order),

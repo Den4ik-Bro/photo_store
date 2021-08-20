@@ -203,7 +203,7 @@ def orders(request):
             order = form.save(commit=False)
             order.owner = request.user
             order.save()
-            return redirect('/profile/' + str(order.owner.id) + '/')
+            return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
     form = OrderForm()
     return render(request, 'orders.html', {
         'user_orders': orders,
@@ -341,9 +341,9 @@ def del_order(request, order_id):
     order = Order.objects.get(id=order_id)
     if not order.response_set.filter(is_selected=True).first():  # если у заказа выбран исполнитель заказ удалить нельзя
         order.delete()
-        return redirect('/orders/')
+        return redirect(reverse('photo_store:orders'))
     else:
-        return redirect('/orders/')
+        return redirect(reverse('photo_store:orders'))
 
 
 def ok(request):
