@@ -24,7 +24,7 @@
     {% if text.receiver == request.user or text.receiver ==  message.sender %}
         <p><b>{{ text.sender }}</b></p>
         <p>{{ text.date_time }}</p>
-        <p>{{ text.text }}</p>
+        <p>{{ text.text|safe }}</p>
         <hr>
     {% endif %}
 {% endfor %}

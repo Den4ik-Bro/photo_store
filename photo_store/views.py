@@ -1,5 +1,5 @@
 from itertools import chain
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse
 from django.contrib.auth.models import User
 from .models import Photo, Message, Order, Topic, Response, Tag
 from django.db.models import Q, Prefetch, Avg, Count
@@ -19,7 +19,7 @@ def main(request):
 
 def profile_login(request):
     """редирект на profile/<int:user_id>/"""
-    return redirect('/profile/' + str(request.user.id) + '/')
+    return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
 
 
 def profile(request, user_id):
@@ -139,46 +139,56 @@ def del_photo(request, photo_id):
 def photographers(request):
     """список пользователей которые являются фотографами"""
     user = User.objects.filter(is_photographer=True).annotate(avg_rate=Avg('response__rate'))
-    order = Order.objects.filter(owner=request.user)
+    # order = Order.objects.filter(owner=request.user)
     form = InviteForm(request.user)
     return render(request, 'photographers.html', {'users': user,
-                                                  'orders': order,
+                                                  # 'orders': order,
                                                   'form': form
                                                   })
 
 
 def invite_to_order(request, user_id):
-    # # if request.method == 'POST':
-    # message = Message.objects.create(
-    #     text='фывфыв',
-    #     sender=request.user,
-    #     receiver=user_id,
-    # )
-    # message.save()
+    if request.method == 'POST':
+        form = InviteForm(request.user, request.POST)
+        if form.is_valid():
+            receiver = User.objects.get(pk=user_id)
+            order = form.cleaned_data["orders"]
+            order_url = '/order/' + str(order.id) + '/'
+            message = Message.objects.create(
+                receiver=receiver,
+                sender=request.user,
+                text=f'{request.user} приглащает вас на съемку <a href="{order_url}">{order}</a>'
+            )
+            return redirect(order_url)
     return redirect('/photographers/')
-    # # return redirect('/photographers/')
 
 
-def view_message(request, message_id):
+def view_message(request, conversationer_id):
     """посмотреть переписку"""
-    message = Message.objects.select_related('sender', 'receiver').get(pk=message_id)
-    text_message = Message.objects.select_related('sender', 'receiver').filter(sender=message.sender)
-    text_message_user = Message.objects.select_related('sender', 'receiver').filter(sender=request.user)
+    conversationer = User.objects.get(pk=conversationer_id)
+    text_message = Message.objects.select_related('sender', 'receiver').filter(
+        sender=conversationer,
+        receiver=request.user
+    )
+    text_message_user = Message.objects.select_related('sender', 'receiver').filter(
+        sender=request.user,
+        receiver=conversationer
+    )
     message_list = sorted(chain(text_message, text_message_user), key=lambda instance: instance.date_time)
     form = SendMessageForm()
-    if request.method == 'POST':
-        form = SendMessageForm(request.POST)
-        if form.is_valid():
-            new_message = form.save(commit=False)
-            new_message.sender = request.user
-            new_message.receiver = message.sender
-            new_message.save()
-            return redirect('/message/' + str(message_id) + '/')
-    return render(request, 'message.html', {'message': message,
-                                            # 'text_message': text_message,
-                                            # 'text_message_user': text_message_user,
-                                            'message_list': message_list,
-                                            'form': form})
+    if conversationer == request.user: # форма отправки сообщения только если выполнено условие, пока так
+        if request.method == 'POST':
+            form = SendMessageForm(request.POST)
+            if form.is_valid():
+                new_message = form.save(commit=False)
+                new_message.sender = request.user
+                new_message.receiver = conversationer
+                new_message.save()
+                return redirect('/message/' + str(conversationer_id) + '/')
+    return render(request, 'message.html', {
+        'message_list': message_list,
+        'form': form
+    })
 
 
 def orders(request):
@@ -253,7 +263,7 @@ def get_order(request, order_id):
             Message.objects.create(text=response.text,   # сообщение заказчику от исполнителя
                                    sender=response.photographer,
                                    receiver=order.owner)
-            return redirect('/ok/')
+            return redirect(reverse('photo_store:response sent'))
         if photo_form.is_valid():                        # добавить фотку к заказу
             photo = photo_form.save(commit=False)
             photo.photographer = request.user

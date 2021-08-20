@@ -47,16 +47,15 @@
 
 <h2>Сообщения</h2>
 {% if user.id == request.user.id %}
-    {% for key, value in message_dict.items %}
-        <p>{{ key }}</p>
-        <p>{{ value.0.text }}</p>
+    {% for conversationer, message in message_dict.items %}
+        <p>{{ conversationer }}</p>
+        <p>{{ message.0.text|safe }}</p>
 <!--        <p>{{ message.date_time }}</p>-->
 <!--        <p>Кто: {{ message.sender }}</p>-->
 <!--        <p>Текст: {{ message.text }}</p>-->
-        <form action="/message/{{ value.0.id }}" method="GET">
-            {% csrf_token %}
-            <p><input type="submit" value="ответить"></p>
-        </form>
+        <a href="{% url 'photo_store:show_messages' conversationer_id=conversationer.id %}">
+            <p><input type="button" value="ответить"></p>
+        </a>
 <!--        <p>Кому: {{ message.receiver }}</p>-->
     <hr>
     {% endfor %}
@@ -75,7 +74,7 @@
     <h2>Заказы</h2>
 {% endif %}
     {% for order in user.order_set.all %}
-            <a href="/order/{{ order.id }}">{{ order }}</a>
+            <p><a href="/order/{{ order.id }}">{{ order }}</a></p>
         {% endfor %}
 
 {% if user.id == request.user.id %}

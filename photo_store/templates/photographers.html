@@ -8,7 +8,9 @@
         <a href="/profile/{{ user.id }}"><p>{{ user }}</p></a>
         <p>Рейтинг: {{ user.avg_rate }}</p>
         <p>Коментарии: {% for response in user.response_set.all %}</p>
-                           <a href="/order/{{ response.order.id }}/">{{ response.comment }}</a>
+                            {% if response.comment %}
+                                <a href="/order/{{ response.order.id }}/">{{ response.comment }}</a>
+                            {% endif %}
                         {% endfor %}
         {% if request.user.id != user.id %}
             <p>Пригласите фотографа в заказ</p>

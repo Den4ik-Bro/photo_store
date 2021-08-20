@@ -101,6 +101,6 @@ class TagForm(forms.ModelForm):
 class InviteForm(forms.Form):
     orders = forms.ModelChoiceField(queryset=None, label='заказ')
 
-    def __init__(self, owner):
-        super().__init__()
+    def __init__(self, owner, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.fields['orders'].queryset=Order.objects.filter(owner=owner)

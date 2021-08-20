@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.db.models import Max, F
-from .models import Order, Topic, Response, Photo, Message
+from .models import Order, Topic, Response, Photo, Message, Tag
 from .forms import PhotoForm
 from PIL import Image
 
@@ -15,13 +15,11 @@ class OrderTest(TestCase):
             username='admin',
             password='12345'
         )
-        admin.save()
         photographer = User.objects.create_user(
             username='user',
             password='123456',
             is_photographer=True
         )
-        photographer.save()
         topic = Topic.objects.create(name='свадебная')
         topic.save()
         self.order = Order.objects.create(
@@ -31,20 +29,17 @@ class OrderTest(TestCase):
             is_public=True,
             topic=topic
         )
-        self.order.save()
         response = Response.objects.create(
             text='asdasd',
             is_selected=True,
             order=self.order,
             photographer=photographer
         )
-        response.save()
         self.photo_for_response = Photo.objects.create(
             image='photo/test_photo_1',
             response=response,
             photographer=photographer
         )
-        self.photo_for_response.save()
 
     def test_is_photos_on_order_page(self):
         self.client.login(username='admin', password='12345')
@@ -55,6 +50,11 @@ class OrderTest(TestCase):
         self.assertTrue(self.photo_for_response in server_response.context['photo_list'])
         self.assertTemplateUsed(server_response, 'order_info.html')
 
+    def test_orders_view(self):
+        self.client.login(username='admin', password='12345')
+        server_response = self.client.get('/orders/')
+        self.assertEqual(server_response.status_code, 200)
+
 
 class ProfileTest(TestCase):
     def setUp(self):
@@ -63,7 +63,6 @@ class ProfileTest(TestCase):
             password='test123',
             is_photographer=True
         )
-        self.user_1.save()
 
         self.user_2 = User.objects.create_user(
             username='test2',
@@ -71,14 +70,16 @@ class ProfileTest(TestCase):
             is_photographer=True
         )
 
+        self.tag1 = Tag.objects.create(name='test')
+        self.tag2 = Tag.objects.create(name='test_test')
+
         self.photo = Photo.objects.create(
             image='photo/test_photo_1',
-            photographer=self.user_1
+            photographer=self.user_1,
         )
-        self.photo.save()
+        self.photo.tags.add(self.tag2, self.tag1)
 
         topic = Topic.objects.create(name='test')
-        topic.save()
 
         order_1 = Order.objects.create(
             topic=topic,
@@ -86,7 +87,6 @@ class ProfileTest(TestCase):
             price=1000,
             is_public=True,
         )
-        order_1.save()
 
         order_2 = Order.objects.create(
             topic=topic,
@@ -94,14 +94,12 @@ class ProfileTest(TestCase):
             price=2000,
             is_public=True,
         )
-        order_2.save()
 
         response = Response.objects.create(
             order=order_2,
             photographer=self.user_1,
             is_selected=False
         )
-        response.save()
 
         Message.objects.create(
             sender=self.user_1,
@@ -144,14 +142,42 @@ class ProfileTest(TestCase):
         # user_messages = self.user_1.sent_messages\
         #     .annotate(last_date=Max('date_time')).filter(date_time=F('last_date')) #+ self.user_1.received_messages.all()
         # print(user_messages)
+        x = self.user_1.sent_messages.filter(
+            id__in=self.user_1.sent_messages.order_by().values('receiver').annotate(last_id=Max('id')).values_list('last_id',
+                                                                                                              flat=True))
 
-    def test_photo_append(self):
-        image = Image.open('media/test/test_test.jpg')
-        form = PhotoForm()
-        form['image'] = image
-        form['description'] = 'dfdgfd'
+    # def test_photo_append(self):
+    #     image = Image.open('media/test/test_test.jpg')
+    #     form = PhotoForm()
+    #     form['image'] = image
+    #     form['description'] = 'dfdgfd'
+    #     self.client.login(username='test1', password='test123')
+    #     self.client.post('/profile/' + str(self.user_1.id) + '/', date=form)
+
+    def test_main_views(self):
+        server_response = self.client.get('')
+        self.assertEqual(server_response.status_code, 200)
+
+    def test_message_view(self):
         self.client.login(username='test1', password='test123')
-        self.client.post('/profile/' + str(self.user_1.id) + '/', date=form)
+        message = Message.objects.create(
+            sender=self.user_1,
+            receiver=self.user_2,
+            text='sdfsd'
+        )
+        server_response = self.client.get('/message/' + str(message.id) + '/')
+        self.assertEqual(server_response.status_code, 200)
 
+    def test_photo_view(self):
+        self.client.login(username='test1', password='test123')
+        server_response = self.client.get('/photo_view/' + str(self.photo.id) + '/')
+        self.assertEqual(server_response.status_code, 200)
+        for tag in self.photo.tags.all():
+            self.assertContains(server_response, tag.name)
 
-
+    def test_photographers(self):
+        self.client.login(username='test1', password='test123')
+        server_response = self.client.get('/photographers/')
+        self.assertEqual(server_response.status_code, 200)
+        for user in User.objects.filter(is_photographer=True):
+            self.assertContains(server_response, user)
