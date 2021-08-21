@@ -137,7 +137,7 @@ def del_photo(request, photo_id):
     user = request.user
     photo = Photo.objects.get(id=photo_id)
     photo.delete()
-    return redirect('/profile/' + str(user.id) + '/')
+    return redirect(reverse('photo_store:show_profile', kwargs={'user_id': user.id})) # '/profile/' + str(user.id) + '/'
 
 
 def photographers(request):
@@ -163,12 +163,13 @@ def invite_to_order(request, user_id):
                 text=f'{request.user} приглащает вас на съемку <a href="{order_url}">{order}</a>'
             )
             return redirect(order_url)
-    return redirect(reverse('photographers'))
+    return redirect(reverse('photo_store:photographers'))
 
 
 def view_message(request, conversationer_id):
     """посмотреть переписку"""
     conversationer = User.objects.get(pk=conversationer_id)
+    print(conversationer)
     text_message = Message.objects.select_related('sender', 'receiver').filter(
         sender=conversationer,
         receiver=request.user
@@ -179,15 +180,15 @@ def view_message(request, conversationer_id):
     )
     message_list = sorted(chain(text_message, text_message_user), key=lambda instance: instance.date_time)
     form = SendMessageForm()
-    if conversationer == request.user: # форма отправки сообщения только если выполнено условие, пока так
-        if request.method == 'POST':
-            form = SendMessageForm(request.POST)
-            if form.is_valid():
-                new_message = form.save(commit=False)
-                new_message.sender = request.user
-                new_message.receiver = conversationer
-                new_message.save()
-                return redirect('/message/' + str(conversationer_id) + '/')
+    if request.method == 'POST':
+        form = SendMessageForm(request.POST)
+        if form.is_valid():
+            new_message = form.save(commit=False)
+            new_message.sender = request.user
+            new_message.receiver = conversationer
+            new_message.save()
+            return redirect(reverse('photo_store:show_messages',  # '/message/' + str(conversationer_id) + '/'
+                                    kwargs={'conversationer_id': conversationer_id}))
     return render(request, 'message.html', {
         'message_list': message_list,
         'form': form
@@ -274,13 +275,13 @@ def get_order(request, order_id):
             photo.photographer = request.user
             photo.response = order.response_set.get(is_selected=True)
             photo.save()
-            return redirect('/order/' + str(order.id) + '/')
+            return redirect(reverse('photo_store:order', kwargs={'order_id': order.id})) # '/order/' + str(order.id) + '/'
         if rate_response_form.is_valid():                 # добавить оценку и отзыв выполненого заказа
             rate_comment = rate_response_form.save(commit=False)
             accepted_response.comment = rate_comment.comment
             accepted_response.rate = rate_comment.rate
             accepted_response.save()
-            return redirect('/order/' + str(order.id) + '/')
+            return redirect(reverse('photo_store:order', kwargs={'order_id': order.id}))
     form = ResponseForm()
     photo_form = PhotoForm()
     rate_response_form = RateResponseForm()
@@ -315,7 +316,7 @@ def select_response(request, response_id):
     for s in del_response:
         if not s.is_selected:
             s.delete()
-    return redirect('/order/' + str(order.id) + '/')
+    return redirect(reverse('photo_store:order', kwargs={'order_id': order.id}))
 
 
 def edit_order(request, order_id):
@@ -328,7 +329,7 @@ def edit_order(request, order_id):
             # order.text = form.cleaned_data['text']
             # order.price = form.cleaned_data['price']
             # order.save()
-            return redirect('/order/' + str(order.id) + '/')
+            return redirect(reverse('photo_store:order', kwargs={'order_id': order.id}))
     else:
         form = OrderForm(initial=model_to_dict(order))
     return render(request, 'edit_order.html', {

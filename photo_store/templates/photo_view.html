@@ -13,6 +13,6 @@
                 {{ form.as_p }}
                 <p><input type="submit" value="Добавить тэг"></p>
         </form>
-        <a href="/del_photo/{{current_photo.id}}/"><input type="button" value="Удалить фото"></a>
+        <a href="{% url 'photo_store:del_photo' photo_id=current_photo.id %}/"><input type="button" value="Удалить фото"></a>
 
 {% endblock %}
