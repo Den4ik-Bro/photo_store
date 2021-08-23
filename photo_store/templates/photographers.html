@@ -9,6 +9,7 @@
         <p>Рейтинг: {{ user.avg_rate }}</p>
         <p>Коментарии: {% for response in user.response_set.all %}</p>
                             {% if response.comment %}
+                                <p><a href="{% url 'photo_store:show_profile' user_id=response.order.owner.id %}">{{ response.order.owner }}:<a/></p>
                                 <a href="/order/{{ response.order.id }}/">{{ response.comment }}</a>
                             {% endif %}
                         {% endfor %}
