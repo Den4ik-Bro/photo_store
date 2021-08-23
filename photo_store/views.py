@@ -307,9 +307,10 @@ def select_response(request, response_id):
     """функция выбора отклика"""
     response = Response.objects.get(id=response_id)
     order = response.order
+    order_url = '/order/' + str(order.id) + '/'  # 'url "photo_store:order" order_id=order.id'
     response.is_selected = True
     response.save()
-    Message.objects.create(text=f'Вас выбрали исполнителем заказа {order}',
+    Message.objects.create(text=f'Вас выбрали исполнителем заказа <a href="{order_url}">{order}</a>',
                            sender=order.owner,
                            receiver=response.photographer)
     del_response = Response.objects.filter(order=order)
