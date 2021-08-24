@@ -157,7 +157,7 @@ def invite_to_order(request, user_id):
             receiver = User.objects.get(pk=user_id)
             order = form.cleaned_data["orders"]
             order_url = '/order/' + str(order.id) + '/'
-            message = Message.objects.create(
+            Message.objects.create(
                 receiver=receiver,
                 sender=request.user,
                 text=f'{request.user} приглащает вас на съемку <a href="{order_url}">{order}</a>'
