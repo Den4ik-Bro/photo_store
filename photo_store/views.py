@@ -7,7 +7,7 @@ from .forms import ProfileForm, OrderForm, ResponseForm, PhotoForm, SendMessageF
     RateResponseForm, InviteForm
 from django.forms.models import model_to_dict
 from django.contrib.auth import get_user_model, authenticate, login
-
+from django.forms import modelformset_factory
 
 User = get_user_model()
 
@@ -142,27 +142,33 @@ def del_photo(request, photo_id):
 
 def photographers(request):
     """список пользователей которые являются фотографами"""
-    user = User.objects.filter(is_photographer=True).annotate(avg_rate=Avg('response__rate'))
-    form = InviteForm(request.user)
+    # form = InviteForm(request.user)
+    InviteFormSet = modelformset_factory(User, InviteForm, extra=0)
+    form_set = InviteFormSet(queryset=User.objects.filter(is_photographer=True)
+                             .exclude(pk=request.user.id)
+                             .annotate(avg_rate=Avg('response__rate')), form_kwargs={'owner': request.user})
     return render(request, 'photographers.html', {
-        'users': user,
-        'form': form
+        'form_set': form_set
       })
 
 
-def invite_to_order(request, user_id):
+def invite_to_orders(request):
     if request.method == 'POST':
-        form = InviteForm(request.user, request.POST)
-        if form.is_valid():
-            receiver = User.objects.get(pk=user_id)
-            order = form.cleaned_data["orders"]
-            order_url = '/order/' + str(order.id) + '/'
-            Message.objects.create(
-                receiver=receiver,
-                sender=request.user,
-                text=f'{request.user} приглащает вас на съемку <a href="{order_url}">{order}</a>'
-            )
-            return redirect(order_url)
+        InviteFormSet = modelformset_factory(User, InviteForm, extra=0)
+        form_set = InviteFormSet(request.POST, form_kwargs={'owner': request.user})
+        if form_set.is_valid():
+            for form in form_set:
+                receiver = form.cleaned_data["id"]
+                order = form.cleaned_data["orders"]
+                order_url = reverse('photo_store:order', kwargs={'order_id': order.id})
+                Message.objects.create(
+                    receiver=receiver,
+                    sender=request.user,
+                    text=f'{request.user} приглащает вас на съемку <a href="{order_url}">{order}</a>'
+                )
+            return redirect(reverse('photo_store:profile'))
+        else:
+            print(form_set.errors)
     return redirect(reverse('photo_store:photographers'))
 
 
@@ -197,7 +203,8 @@ def view_message(request, conversationer_id):
 
 def orders(request):
     """Заказы"""
-    orders = Order.objects.only('topic', 'owner',).exclude(owner=request.user).all()
+    orders = Order.objects.only('topic', 'owner',).select_related('owner', 'topic').exclude(owner=request.user).all()
+    form = OrderForm()
     if request.method == 'POST':
         form = OrderForm(request.POST)
         if form.is_valid():
@@ -205,7 +212,6 @@ def orders(request):
             order.owner = request.user
             order.save()
             return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
-    form = OrderForm()
     return render(request, 'orders.html', {
         'user_orders': orders,
         'form': form

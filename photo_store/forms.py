@@ -98,9 +98,15 @@ class TagForm(forms.ModelForm):
         fields = ['name']
 
 
-class InviteForm(forms.Form):
+class InviteForm(forms.ModelForm):
     orders = forms.ModelChoiceField(queryset=None, label='заказ')
+
+    class Meta:
+        model = User
+        fields = ('id',)
 
     def __init__(self, owner, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['orders'].queryset=Order.objects.filter(owner=owner)
+
+

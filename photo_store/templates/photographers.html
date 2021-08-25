@@ -2,26 +2,28 @@
 {% block title %} Фотографы {% endblock %}
 
 {% block content %}
-
     <p><h3>Фотографы:</h3></p>
-    {% for user in users %}
-        <a href="/profile/{{ user.id }}"><p>{{ user }}</p></a>
-        <p>Рейтинг: {{ user.avg_rate }}</p>
-        <p>Коментарии: {% for response in user.response_set.all %}</p>
-                            {% if response.comment %}
-                                <p><a href="{% url 'photo_store:show_profile' user_id=response.order.owner.id %}">{{ response.order.owner }}:<a/></p>
-                                <a href="/order/{{ response.order.id }}/">{{ response.comment }}</a>
-                            {% endif %}
-                        {% endfor %}
-        {% if request.user.id != user.id %}
-            <p>Пригласите фотографа в заказ</p>
-            <form action="{% url 'photo_store:invite_to_order' user_id=user.id %}" method="POST">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <input type="submit" value="Пригласить">
-            </form>
-        {% endif %}
-        <hr>
-    {% endfor %}
+    <form action="{% url 'photo_store:invite_to_orders'%}" method="POST">
+        {% csrf_token %}
+
+        {% for form in form_set %}
+        {% with user=form.instance %}
+            <a href="/profile/{{ user.id }}"><p>{{ user }}</p></a>
+            <p>Рейтинг: {{ user.avg_rate }}</p>
+            <p>Коментарии: {% for response in user.response_set.all %}</p>
+                                {% if response.comment %}
+                                    <p><a href="{% url 'photo_store:show_profile' user_id=response.order.owner.id %}">{{ response.order.owner }}:<a/></p>
+                                    <a href="/order/{{ response.order.id }}/">{{ response.comment }}</a>
+                                {% endif %}
+                            {% endfor %}
+            {% if request.user.id != user.id %}
+                <p>Пригласите фотографа в заказ</p>
+                    {{ form.as_p }}
+            {% endif %}
+            <hr>
+        {% endwith %}
+        {% endfor %}
+        <input type="submit" value="Пригласить"/>
+    </form>
 
 {% endblock %}
