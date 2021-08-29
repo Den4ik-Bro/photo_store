@@ -7,14 +7,19 @@ from .forms import ProfileForm, OrderForm, ResponseForm, PhotoForm, SendMessageF
     RateResponseForm, InviteForm
 from django.forms.models import model_to_dict
 from django.contrib.auth import get_user_model, authenticate, login
-from django.forms import modelformset_factory
+from django.forms import modelformset_factory, formset_factory
+from django.views import generic
 
 User = get_user_model()
 
 
-def main(request):
-    """Главная страница"""
-    return render(request, 'main.html')
+class MainView(generic.TemplateView):
+    template_name = 'main.html'
+
+
+# def main(request):
+#     """Главная страница"""
+#     return render(request, 'main.html')
 
 
 def profile_login(request):
@@ -26,17 +31,42 @@ def profile(request, user_id):
     """функция профиля"""
     user = User.objects.prefetch_related\
         (
-            Prefetch('order_set', Order.objects.select_related('topic', 'owner').all())
+            Prefetch('order_set', Order.objects.select_related('topic', 'owner').filter(owner=request.user))
         )\
         .prefetch_related\
         (
-            Prefetch('response_set', Response.objects.select_related('photographer').all())
+            Prefetch('response_set', Response.objects.select_related('photographer', 'order').filter(photographer=request.user))
         )\
         .prefetch_related\
         (
             Prefetch('received_messages', Message.objects.select_related('sender', 'receiver').all())
         )\
         .annotate(avg_rate=Avg('response__rate')).get(pk=user_id)
+    """ниже попытка оптимизировать запрос"""
+    # user = User.objects.prefetch_related\
+    # (
+    #     Prefetch('order_set', Order.objects.select_related('topic', 'owner').filter(owner=request.user))
+    # )\
+    # .prefetch_related\
+    # (
+    #     Prefetch
+    #     (
+    #         'response_set', Response.objects.prefetch_related
+    #         (
+    #         Prefetch
+    #             (
+    #             'photographer', User.objects.prefetch_related
+    #                 (
+    #             Prefetch
+    #                     (
+    #                 'order_set', Order.objects.select_related('topic', 'owner').filter(owner=request.user)
+    #                     )
+    #                 )
+    #             )
+    #         )
+    #     )
+    # )\
+    # .annotate(avg_rate=Avg('response__rate')).get(pk=user_id)
     get_message = Message.objects.select_related('sender', 'receiver').filter(receiver=user)
     message_dict = {}
     for i in get_message:   # получаем список сообщения каждого отправителя
@@ -118,19 +148,6 @@ def edit_profile(request, user_id):
     })
 
 
-# def add_photo(request):
-#     if request.method == 'POST':
-#         form = PhotoForm(request.POST)
-#         user = request.user
-#         if form.is_valid():
-#             photo = form.save(commit=False)
-#             photo.photographer = user
-#             photo.save()
-#             return redirect('/profile/')
-#     form = PhotoForm()
-#     return redirect('/profile/')
-
-
 def del_photo(request, photo_id):
     """Функция удаления фотографии. Комментарий от Леонида"""
     # if request.method == 'POST':
@@ -201,21 +218,83 @@ def view_message(request, conversationer_id):
     })
 
 
-def orders(request):
-    """Заказы"""
-    orders = Order.objects.only('topic', 'owner',).select_related('owner', 'topic').exclude(owner=request.user).all()
-    form = OrderForm()
-    if request.method == 'POST':
-        form = OrderForm(request.POST)
-        if form.is_valid():
-            order = form.save(commit=False)
-            order.owner = request.user
-            order.save()
-            return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
-    return render(request, 'orders.html', {
-        'user_orders': orders,
-        'form': form
-    })
+# def orders_test(request):
+#     """работа с формсетом, тестовая функция"""
+#     orders = Order.objects.only('topic', 'owner',)\
+#         .select_related('owner', 'topic')\
+#         .exclude(owner=request.user)\
+#         .all()
+#     OrderFormSet = modelformset_factory(Order, exclude=('date_time', 'owner'), extra=3)
+#     if request.method == 'POST':
+#         formset = OrderFormSet(request.POST)
+#         orders = []
+#         if formset.is_valid():
+#             instances = formset.save(commit=False)
+#             for instance in instances:
+#                 instance.owner = request.user
+#                 orders.append(instance)
+#             Order.objects.bulk_create(orders)
+#             return redirect(reverse('photo_store:profile'))
+#     formset = OrderFormSet(queryset=Order.objects.none())
+#     return render(request, 'orders_test.html', {
+#         'user_orders': orders,
+#         'formset': formset
+#     })
+
+
+class OrderListView(generic.ListView):
+    # model = Order
+    queryset = Order.objects.only('topic', 'owner',)\
+        .select_related('owner', 'topic')\
+        .all()
+    template_name = 'orders.html'
+    context_object_name = 'user_orders'
+
+    def get_queryset(self):
+        return super().get_queryset().exclude(owner=self.request.user)
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        OrderFormSet = modelformset_factory(Order, exclude=('date_time', 'owner'), extra=3)
+        context['formset'] = OrderFormSet(queryset=Order.objects.none())
+        return context
+
+
+class OrderCreateView(generic.CreateView):
+    model = Order
+    # form_class = OrderForm
+
+    def post(self, request, *args, **kwargs):
+        OrderFormSet = modelformset_factory(Order, exclude=('date_time', 'owner'), extra=3)
+        formset = OrderFormSet(request.POST)
+        orders = []
+        if formset.is_valid():
+            instances = formset.save(commit=False)
+            for instance in instances:
+                instance.owner = request.user
+                orders.append(instance)
+            Order.objects.bulk_create(orders)
+            return redirect(reverse('photo_store:profile'))
+
+
+# def orders(request):
+#     """Заказы"""
+#     orders = Order.objects.only('topic', 'owner',)\
+#         .select_related('owner', 'topic')\
+#         .exclude(owner=request.user)\
+#         .all()
+#     form = OrderForm()
+#     if request.method == 'POST':
+#         form = OrderForm(request.POST)
+#         if form.is_valid():
+#             order = form.save(commit=False)
+#             order.owner = request.user
+#             order.save()
+#             return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
+#     return render(request, 'orders.html', {
+#         'user_orders': orders,
+#         'form': form
+#     })
 
 
 # def add_order(request):
@@ -354,9 +433,11 @@ def del_order(request, order_id):
         return redirect(reverse('photo_store:orders'))
 
 
-def ok(request):
-    """отклик добавлен успешно"""
-    return render(request, 'ok.html')
+class OkView(generic.TemplateView):
+    template_name = 'ok.html'
+# def ok(request):
+#     """отклик добавлен успешно"""
+#     return render(request, 'ok.html')
 
 
 # def add_response(request, order_id):

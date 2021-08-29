@@ -7,10 +7,14 @@
     <p>{% for order in user_orders %}</p>
             <a href="/order/{{ order.id }}">{{ order }}</a>
         {% endfor %}
-    <h2>Cоздать заказ</h2>
-    <form action="." method="POST">
+    <form action="{% url 'photo_store:create_order' %}" method="POST">
         {% csrf_token %}
-        {{ form.as_p }}
+        {{ formset.management_form }}
+        {% for form in formset %}
+        <br>
+        <h2>Новый заказ</h2>
+            {{ form.as_p }}
+        {% endfor %}
         <input type="submit" value="Создать">
     </form>
 
