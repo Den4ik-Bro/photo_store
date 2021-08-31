@@ -11,7 +11,7 @@ urlpatterns = [
     path('tag_photos/<int:tag_id>/', views.tag_photos, name='tag_photos'),
     path('profile/', views.profile_login, name='profile'),
     path('profile/<int:user_id>/', include([
-        path('', views.profile, name='show_profile'),
+        path('', views.ProfileListView.as_view(), name='show_profile'),
         path('edit/', views.edit_profile, name='edit_profile'),
 
     ])),
@@ -19,6 +19,7 @@ urlpatterns = [
     # path('orders/', views.orders, name='orders'),
     path('orders/', views.OrderListView.as_view(), name='orders'),
     path('create_order/', views.OrderCreateView.as_view(), name='create_order'),
+    path('create_photo/', views.PhotoCreateView.as_view(), name='create_photo'),
     path('order/<int:order_id>/', include([
         path('', views.get_order, name='order'),
         path('edit/', views.edit_order, name='edit_order'),

@@ -22,7 +22,8 @@ from . import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('photo_store.urls')),
-    path('register/', views.registration),
+    path('register/', views.RegestrationListView.as_view()),
+    path('create_user/', views.UserCreatView.as_view()),
     path('', include('django.contrib.auth.urls')),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

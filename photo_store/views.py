@@ -27,76 +27,123 @@ def profile_login(request):
     return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
 
 
-def profile(request, user_id):
-    """функция профиля"""
-    user = User.objects.prefetch_related\
+class ProfileListView(generic.ListView):
+    model = User
+    template_name = 'profile.html'
+    queryset = User.objects
+
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related\
         (
-            Prefetch('order_set', Order.objects.select_related('topic', 'owner').filter(owner=request.user))
+            Prefetch('order_set', Order.objects.select_related('topic', 'owner').filter(owner=self.request.user))
         )\
         .prefetch_related\
         (
-            Prefetch('response_set', Response.objects.select_related('photographer', 'order').filter(photographer=request.user))
+            Prefetch('response_set', Response.objects.select_related('photographer', 'order').filter(photographer=self.request.user))
         )\
         .prefetch_related\
         (
             Prefetch('received_messages', Message.objects.select_related('sender', 'receiver').all())
         )\
-        .annotate(avg_rate=Avg('response__rate')).get(pk=user_id)
-    """ниже попытка оптимизировать запрос"""
-    # user = User.objects.prefetch_related\
-    # (
-    #     Prefetch('order_set', Order.objects.select_related('topic', 'owner').filter(owner=request.user))
-    # )\
-    # .prefetch_related\
-    # (
-    #     Prefetch
-    #     (
-    #         'response_set', Response.objects.prefetch_related
-    #         (
-    #         Prefetch
-    #             (
-    #             'photographer', User.objects.prefetch_related
-    #                 (
-    #             Prefetch
-    #                     (
-    #                 'order_set', Order.objects.select_related('topic', 'owner').filter(owner=request.user)
-    #                     )
-    #                 )
-    #             )
-    #         )
-    #     )
-    # )\
-    # .annotate(avg_rate=Avg('response__rate')).get(pk=user_id)
-    get_message = Message.objects.select_related('sender', 'receiver').filter(receiver=user)
-    message_dict = {}
-    for i in get_message:   # получаем список сообщения каждого отправителя
-        message_dict[i.sender] = []
-        s = Message.objects.select_related('sender', 'receiver').filter(sender=i.sender, receiver=user)
-        for j in s:
-            message_dict[i.sender].append(j)
-            # message_dict[i.sender].append(j.id)
-    if request.method == 'POST':
-        message_form = SendMessageForm(request.POST)
+        .annotate(avg_rate=Avg('response__rate')).get(pk=self.request.user.id)
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super(ProfileListView, self).get_context_data(object_list=object_list, **kwargs)
+        context['photo_form'] = PhotoForm()
+        context['message_form'] = SendMessageForm()
+        get_message = Message.objects.select_related('sender', 'receiver').filter(receiver=self.request.user)
+        message_dict = {}
+        for i in get_message:   # получаем список сообщения каждого отправителя
+            message_dict[i.sender] = []
+            s = Message.objects.select_related('sender', 'receiver').filter(sender=i.sender, receiver=self.request.user)
+            for j in s:
+                message_dict[i.sender].append(j)
+        context['message_dict'] = message_dict
+        return context
+
+
+class PhotoCreateView(generic.CreateView):
+    model = User
+
+    def post(self, request, *args, **kwargs):
         photo_form = PhotoForm(request.POST, request.FILES)
         if photo_form.is_valid():
             photo = photo_form.save(commit=False)
-            photo.photographer = request.user
+            photo.photographer = self.request.user
             photo.save()
-            return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
-        if message_form.is_valid():
-            message = message_form.save(commit=False)
-            message.sender = request.user
-            message.receiver = User.objects.get(id=user_id)
-            message.save()
-            return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
-    photo_form = PhotoForm()
-    message_form = SendMessageForm()
-    return render(request, 'profile.html', {
-        'user': user,
-        'photo_form': photo_form,
-        'message_form': message_form,
-        'message_dict': message_dict
-    })
+            return redirect(reverse('photo_store:show_profile', kwargs={'user_id': self.request.user.id}))
+
+
+# def profile(request, user_id):
+#     """функция профиля"""
+#     user = User.objects.prefetch_related\
+#         (
+#             Prefetch('order_set', Order.objects.select_related('topic', 'owner').filter(owner=request.user))
+#         )\
+#         .prefetch_related\
+#         (
+#             Prefetch('response_set', Response.objects.select_related('photographer', 'order').filter(photographer=request.user))
+#         )\
+#         .prefetch_related\
+#         (
+#             Prefetch('received_messages', Message.objects.select_related('sender', 'receiver').all())
+#         )\
+#         .annotate(avg_rate=Avg('response__rate')).get(pk=user_id)
+#     """ниже попытка оптимизировать запрос"""
+#     # user = User.objects.prefetch_related\
+#     # (
+#     #     Prefetch('order_set', Order.objects.select_related('topic', 'owner').filter(owner=request.user))
+#     # )\
+#     # .prefetch_related\
+#     # (
+#     #     Prefetch
+#     #     (
+#     #         'response_set', Response.objects.prefetch_related
+#     #         (
+#     #         Prefetch
+#     #             (
+#     #             'photographer', User.objects.prefetch_related
+#     #                 (
+#     #             Prefetch
+#     #                     (
+#     #                 'order_set', Order.objects.select_related('topic', 'owner').filter(owner=request.user)
+#     #                     )
+#     #                 )
+#     #             )
+#     #         )
+#     #     )
+#     # )\
+#     # .annotate(avg_rate=Avg('response__rate')).get(pk=user_id)
+#     get_message = Message.objects.select_related('sender', 'receiver').filter(receiver=user)
+#     message_dict = {}
+#     for i in get_message:   # получаем список сообщения каждого отправителя
+#         message_dict[i.sender] = []
+#         s = Message.objects.select_related('sender', 'receiver').filter(sender=i.sender, receiver=user)
+#         for j in s:
+#             message_dict[i.sender].append(j)
+#             # message_dict[i.sender].append(j.id)
+#     if request.method == 'POST':
+#         message_form = SendMessageForm(request.POST)
+#         photo_form = PhotoForm(request.POST, request.FILES)
+#         if photo_form.is_valid():
+#             photo = photo_form.save(commit=False)
+#             photo.photographer = request.user
+#             photo.save()
+#             return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
+#         if message_form.is_valid():
+#             message = message_form.save(commit=False)
+#             message.sender = request.user
+#             message.receiver = User.objects.get(id=user_id)
+#             message.save()
+#             return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
+#     photo_form = PhotoForm()
+#     message_form = SendMessageForm()
+#     return render(request, 'profile.html', {
+#         'user': user,
+#         'photo_form': photo_form,
+#         'message_form': message_form,
+#         'message_dict': message_dict
+#     })
 
 
 # def profile(request, user_id):
@@ -159,7 +206,6 @@ def del_photo(request, photo_id):
 
 def photographers(request):
     """список пользователей которые являются фотографами"""
-    # form = InviteForm(request.user)
     InviteFormSet = modelformset_factory(User, InviteForm, extra=0)
     form_set = InviteFormSet(queryset=User.objects.filter(is_photographer=True)
                              .exclude(pk=request.user.id)
@@ -435,9 +481,6 @@ def del_order(request, order_id):
 
 class OkView(generic.TemplateView):
     template_name = 'ok.html'
-# def ok(request):
-#     """отклик добавлен успешно"""
-#     return render(request, 'ok.html')
 
 
 # def add_response(request, order_id):
@@ -477,9 +520,20 @@ def tag_photos(request, tag_id):
     })
 
 
-def registration(request):
-    """регистрация"""
-    if request.method == 'POST':
+class RegestrationListView(generic.ListView):
+    template_name = 'register.html'
+    model = User  # без queryset не хочет работать, почему? зачем он тут?
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        context['form'] = RegistrationUserForm()
+        return context
+
+
+class UserCreatView(generic.CreateView):
+    model = User
+
+    def post(self, request, *args, **kwargs):
         form = RegistrationUserForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
@@ -489,10 +543,26 @@ def registration(request):
                 login_user = authenticate(request, username=user.username, password=form.cleaned_data['password_1'])
                 login(request, login_user)
                 return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
-    else:
-        form = RegistrationUserForm()
-    return render(request, 'register.html', {
-        'form': form
-    })
+        else:
+            return redirect('register/')
+
+
+# def registration(request):
+#     """регистрация"""
+#     if request.method == 'POST':
+#         form = RegistrationUserForm(request.POST)
+#         if form.is_valid():
+#             user = form.save(commit=False)
+#             if form.cleaned_data['password_1'] == form.cleaned_data['password_2']:
+#                 user.set_password(form.cleaned_data['password_1'])
+#                 user.save()
+#                 login_user = authenticate(request, username=user.username, password=form.cleaned_data['password_1'])
+#                 login(request, login_user)
+#                 return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
+#     else:
+#         form = RegistrationUserForm()
+#     return render(request, 'register.html', {
+#         'form': form
+#     })
 
 
