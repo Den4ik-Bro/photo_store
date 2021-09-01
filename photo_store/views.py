@@ -24,15 +24,14 @@ class MainView(generic.TemplateView):
 
 def profile_login(request):
     """редирект на profile/<int:user_id>/"""
-    return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
+    return redirect(reverse('photo_store:show_profile', kwargs={'pk': request.user.id}))
 
 
-class ProfileListView(generic.ListView):
+class ProfileDetailView(generic.DetailView):
     model = User
     template_name = 'profile.html'
-    queryset = User.objects
 
-    def get_queryset(self):
+    def get_object(self, queryset=None):
         return super().get_queryset().prefetch_related\
         (
             Prefetch('order_set', Order.objects.select_related('topic', 'owner').filter(owner=self.request.user))
@@ -48,7 +47,7 @@ class ProfileListView(generic.ListView):
         .annotate(avg_rate=Avg('response__rate')).get(pk=self.request.user.id)
 
     def get_context_data(self, *, object_list=None, **kwargs):
-        context = super(ProfileListView, self).get_context_data(object_list=object_list, **kwargs)
+        context = super().get_context_data(object_list=object_list, **kwargs)
         context['photo_form'] = PhotoForm()
         context['message_form'] = SendMessageForm()
         get_message = Message.objects.select_related('sender', 'receiver').filter(receiver=self.request.user)
@@ -179,29 +178,56 @@ class PhotoCreateView(generic.CreateView):
 #                                             'message_form': message_form})
 
 
-def edit_profile(request, user_id):
-    """редактирование профиля"""
-    if user_id != request.user.id:
-        return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
-    user = request.user
-    form = ProfileForm(instance=user)
-    if request.method == 'POST':
-        form = ProfileForm(request.POST, instance=user)
-        if form.is_valid():
-            user.save()
-            return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
-    return render(request, 'edit_profile.html', {
-        'profile_form': form
-    })
+class EditProfileView(generic.UpdateView):
+    model = User
+    form_class = ProfileForm
+    template_name = 'edit_profile.html'
+
+    def get_success_url(self):
+        return reverse('photo_store:show_profile', kwargs={'pk': self.request.user.id})
+
+    def get(self, request, pk):
+        if pk != request.user.id:
+            return redirect(reverse('photo_store:show_profile', kwargs={'pk': request.user.id}))
+        return super().get(request, pk)
+
+    def post(self, request, pk):
+        if pk != request.user.id:
+            return redirect(reverse('photo_store:show_profile', kwargs={'pk': request.user.id}))
+        return super().post(request, pk)
+
+# def edit_profile(request, user_id):
+#     """редактирование профиля"""
+#     if user_id != request.user.id:
+#         return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
+#     user = request.user
+#     form = ProfileForm(instance=user)
+#     if request.method == 'POST':
+#         form = ProfileForm(request.POST, instance=user)
+#         if form.is_valid():
+#             user.save()
+#             return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
+#     return render(request, 'edit_profile.html', {
+#         'profile_form': form
+#     })
 
 
-def del_photo(request, photo_id):
-    """Функция удаления фотографии. Комментарий от Леонида"""
-    # if request.method == 'POST':
-    user = request.user
-    photo = Photo.objects.get(id=photo_id)
-    photo.delete()
-    return redirect(reverse('photo_store:show_profile', kwargs={'user_id': user.id})) # '/profile/' + str(user.id) + '/'
+class DeletePhotoView(generic.DeleteView):
+    model = Photo
+
+    def get_success_url(self):
+        return reverse('photo_store:show_profile', kwargs={'pk': self.request.user.id})
+
+    def get(self, request, pk):
+        return self.post(request, pk)
+
+# def del_photo(request, photo_id):
+#     """Функция удаления фотографии. Комментарий от Леонида"""
+#     # if request.method == 'POST':
+#     user = request.user
+#     photo = Photo.objects.get(id=photo_id)
+#     photo.delete()
+#     return redirect(reverse('photo_store:show_profile', kwargs={'user_id': user.id})) # '/profile/' + str(user.id) + '/'
 
 
 def photographers(request):
@@ -520,17 +546,12 @@ def tag_photos(request, tag_id):
     })
 
 
-class RegestrationListView(generic.ListView):
+class RegistrationFormView(generic.FormView):
     template_name = 'register.html'
-    model = User  # без queryset не хочет работать, почему? зачем он тут?
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(object_list=object_list, **kwargs)
-        context['form'] = RegistrationUserForm()
-        return context
+    form_class = RegistrationUserForm
 
 
-class UserCreatView(generic.CreateView):
+class UserCreateView(generic.CreateView):
     model = User
 
     def post(self, request, *args, **kwargs):

@@ -10,9 +10,10 @@ urlpatterns = [
     path('invite_to_orders/', views.invite_to_orders, name='invite_to_orders'),
     path('tag_photos/<int:tag_id>/', views.tag_photos, name='tag_photos'),
     path('profile/', views.profile_login, name='profile'),
-    path('profile/<int:user_id>/', include([
-        path('', views.ProfileListView.as_view(), name='show_profile'),
-        path('edit/', views.edit_profile, name='edit_profile'),
+    path('profile/<int:pk>/', include([
+        path('', views.ProfileDetailView.as_view(), name='show_profile'),
+        # path('edit/', views.edit_profile, name='edit_profile'),
+        path('edit/', views.EditProfileView.as_view(), name='edit_profile'),
 
     ])),
     path('message/<int:conversationer_id>/', views.view_message, name='show_messages'),
@@ -27,7 +28,7 @@ urlpatterns = [
     path('ok/', views.OkView.as_view(), name='response sent'),
     path('select_response/<int:response_id>/', views.select_response, name='select_response'),
     path('photo_view/<int:photo_id>/', views.photo_view, name='photo_view'),
-    path('del_photo/<int:photo_id>/', views.del_photo, name='del_photo'),
+    path('del_photo/<int:pk>/', views.DeletePhotoView.as_view(), name='del_photo'),
     path('del_order/<int:order_id>/', views.del_order, name='del_order'),
 ]
 

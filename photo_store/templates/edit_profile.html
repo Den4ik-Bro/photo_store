@@ -8,7 +8,7 @@
 <!--    <p><label>Имя:</label><input type="text" name="first_name" value="{{user.first_name}}"></p>-->
 <!--    <p><label>Фамилия:</label><input type="text" name="last_name" value="{{user.last_name}}"></p>-->
 <!--    <p><label>Email:</label><input type="text" name="email" value="{{user.email}}"></p>-->
-    {{ profile_form.as_p }}
+    {{ form.as_p }}
     {% if form.errors %}
       {% for error in form.errors %}
         <p>{{error}}</p>
