@@ -27,7 +27,7 @@ urlpatterns = [
     ])),
     path('ok/', views.OkView.as_view(), name='response sent'),
     path('select_response/<int:response_id>/', views.select_response, name='select_response'),
-    path('photo_view/<int:photo_id>/', views.photo_view, name='photo_view'),
+    path('photo_view/<int:pk>/', views.PhotoDetailView.as_view(), name='photo_view'),
     path('del_photo/<int:pk>/', views.DeletePhotoView.as_view(), name='del_photo'),
     path('del_order/<int:order_id>/', views.del_order, name='del_order'),
 ]

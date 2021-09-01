@@ -32,7 +32,7 @@
 <h2>Портфолио</h2>
 {% for photo in user.photo_set.all %}
     {% if not photo.response %}
-        <a href="{% url 'photo_store:photo_view' photo_id=photo.id %}"><img src="{{ photo.image.url }}" style="width: 15%"></a>
+        <a href="{% url 'photo_store:photo_view' pk=photo.id %}"><img src="{{ photo.image.url }}" style="width: 15%"></a>
     {% endif %}
 {% endfor %}
 

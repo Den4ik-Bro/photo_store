@@ -70,7 +70,7 @@ class PhotoCreateView(generic.CreateView):
             photo = photo_form.save(commit=False)
             photo.photographer = self.request.user
             photo.save()
-            return redirect(reverse('photo_store:show_profile', kwargs={'user_id': self.request.user.id}))
+            return redirect(reverse('photo_store:show_profile', kwargs={'pk': self.request.user.id}))
 
 
 # def profile(request, user_id):
@@ -264,7 +264,6 @@ def invite_to_orders(request):
 def view_message(request, conversationer_id):
     """посмотреть переписку"""
     conversationer = User.objects.get(pk=conversationer_id)
-    print(conversationer)
     text_message = Message.objects.select_related('sender', 'receiver').filter(
         sender=conversationer,
         receiver=request.user
@@ -462,7 +461,7 @@ def get_order(request, order_id):
 
 def select_response(request, response_id):
     """функция выбора отклика"""
-    response = Response.objects.get(id=response_id)
+    response = Response.objects.get(pk=response_id)
     order = response.order
     order_url = '/order/' + str(order.id) + '/'  # 'url "photo_store:order" order_id=order.id'
     response.is_selected = True
@@ -523,19 +522,24 @@ class OkView(generic.TemplateView):
 #     return redirect('/ok/')
 
 
-def photo_view(request, photo_id):
-    """функия просмотра отдельной фотографии"""
-    photo = Photo.objects.only('image', 'description', 'tags').get(id=photo_id)
-    if request.method == 'POST':
-        form = TagForm(request.POST)
-        if form.is_valid():
-            tag, created = Tag.objects.get_or_create(name=form.cleaned_data['name'])
-            photo.tags.add(tag)
-    form = TagForm()
-    return render(request, 'photo_view.html', {
-        'current_photo': photo,
-        'form': form
-    })
+class PhotoDetailView(generic.DetailView):
+    model = Photo
+    template_name = 'photo_view.html'
+
+
+# def photo_view(request, photo_id):
+#     """функия просмотра отдельной фотографии"""
+#     photo = Photo.objects.only('image', 'description', 'tags').get(id=photo_id)
+#     if request.method == 'POST':
+#         form = TagForm(request.POST)
+#         if form.is_valid():
+#             tag, created = Tag.objects.get_or_create(name=form.cleaned_data['name'])
+#             photo.tags.add(tag)
+#     form = TagForm()
+#     return render(request, 'photo_view.html', {
+#         'current_photo': photo,
+#         'form': form
+#     })
 
 
 def tag_photos(request, tag_id):
