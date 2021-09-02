@@ -18,7 +18,7 @@
     {% elif current_order.owner == user and not accepted_response %}
         <p>Это ваш заказ</p>
         <p><a href="{% url 'photo_store:edit_order' order_id=current_order.id %}">Редактировать</a></p>
-        <p><a href="{% url 'photo_store:del_order' order_id=current_order.id %}">Удалить заказ</a></p>
+        <p><a href="{% url 'photo_store:del_order' pk=current_order.id %}">Удалить заказ</a></p>
         <p><a href="{% url 'photo_store:orders' %}">назад</a></p>
     {% elif current_order.owner == user and accepted_response %}
         <p>Это ваш заказ</p>

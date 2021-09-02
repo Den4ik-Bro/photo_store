@@ -5,7 +5,7 @@
 
 <h1>Фотографии по тэгу #{{ tag.name }}</h1>
 {% for photo in tag.photo_set.all %}
-  <img src="{{ photo.image.url }}">
+  <a href="{% url 'photo_store:photo_view' pk=photo.id %}"><img src="{{ photo.image.url }}"></a>
 {% endfor %}
 
 {% endblock %}

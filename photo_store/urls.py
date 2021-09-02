@@ -8,7 +8,7 @@ urlpatterns = [
     path('', views.MainView.as_view(), name='index'),
     path('photographers/', views.photographers, name='photographers'),
     path('invite_to_orders/', views.invite_to_orders, name='invite_to_orders'),
-    path('tag_photos/<int:tag_id>/', views.tag_photos, name='tag_photos'),
+    path('tag_photos/<int:pk>/', views.TagPhotoDetailView.as_view(), name='tag_photos'),
     path('profile/', views.profile_login, name='profile'),
     path('profile/<int:pk>/', include([
         path('', views.ProfileDetailView.as_view(), name='show_profile'),
@@ -28,7 +28,8 @@ urlpatterns = [
     path('ok/', views.OkView.as_view(), name='response sent'),
     path('select_response/<int:response_id>/', views.select_response, name='select_response'),
     path('photo_view/<int:pk>/', views.PhotoDetailView.as_view(), name='photo_view'),
+    path('create_tag/', views.TagCreateView.as_view(), name='create_tag'),
     path('del_photo/<int:pk>/', views.DeletePhotoView.as_view(), name='del_photo'),
-    path('del_order/<int:order_id>/', views.del_order, name='del_order'),
+    path('del_order/<int:pk>/', views.DeleteOrderView.as_view(), name='del_order'),
 ]
 

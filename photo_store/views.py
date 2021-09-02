@@ -1,6 +1,8 @@
 from itertools import chain
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth.models import User
+from django.urls import reverse_lazy
+
 from .models import Photo, Message, Order, Topic, Response, Tag
 from django.db.models import Q, Prefetch, Avg, Count
 from .forms import ProfileForm, OrderForm, ResponseForm, PhotoForm, SendMessageForm, RegistrationUserForm, TagForm, \
@@ -494,14 +496,25 @@ def edit_order(request, order_id):
     })
 
 
-def del_order(request, order_id):
-    """удалить заказ"""
-    order = Order.objects.get(id=order_id)
-    if not order.response_set.filter(is_selected=True).first():  # если у заказа выбран исполнитель заказ удалить нельзя
-        order.delete()
-        return redirect(reverse('photo_store:orders'))
-    else:
-        return redirect(reverse('photo_store:orders'))
+class DeleteOrderView(generic.DeleteView):
+    model = Order
+    template_name = 'order_info.html'
+
+    def get_success_url(self):
+        return reverse('photo_store:show_profile', kwargs={'pk': self.request.user.id})
+
+    def get(self, request, pk):
+        return self.post(request, pk)
+
+
+# def del_order(request, order_id):
+#     """удалить заказ"""
+#     order = Order.objects.get(id=order_id)
+#     if not order.response_set.filter(is_selected=True).first():  # если у заказа выбран исполнитель заказ удалить нельзя
+#         order.delete()
+#         return redirect(reverse('photo_store:orders'))
+#     else:
+#         return redirect(reverse('photo_store:orders'))
 
 
 class OkView(generic.TemplateView):
@@ -526,6 +539,23 @@ class PhotoDetailView(generic.DetailView):
     model = Photo
     template_name = 'photo_view.html'
 
+    def get_context_data(self, *args, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        context['form'] = TagForm()
+        return context
+
+
+class TagCreateView(generic.CreateView):
+    model = Tag
+    form_class = TagForm
+    template_name = 'photo_view.html'
+
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('photo_store:photo_view', kwargs={'pk': 7})
 
 # def photo_view(request, photo_id):
 #     """функия просмотра отдельной фотографии"""
@@ -542,12 +572,18 @@ class PhotoDetailView(generic.DetailView):
 #     })
 
 
-def tag_photos(request, tag_id):
-    """тэги фотографии"""
-    tag = Tag.objects.get(id=tag_id)
-    return render(request, 'tag_photos.html', {
-        'tag': tag
-    })
+class TagPhotoDetailView(generic.DetailView):
+    model = Tag
+    template_name = 'tag_photos.html'
+    context_object_name = 'tag'
+
+
+# def tag_photos(request, tag_id):
+#     """тэги фотографии"""
+#     tag = Tag.objects.get(id=tag_id)
+#     return render(request, 'tag_photos.html', {
+#         'tag': tag
+#     })
 
 
 class RegistrationFormView(generic.FormView):
@@ -567,7 +603,7 @@ class UserCreateView(generic.CreateView):
                 user.save()
                 login_user = authenticate(request, username=user.username, password=form.cleaned_data['password_1'])
                 login(request, login_user)
-                return redirect(reverse('photo_store:show_profile', kwargs={'user_id': request.user.id}))
+                return redirect(reverse('photo_store:show_profile', kwargs={'pk': request.user.id}))
         else:
             return redirect('register/')
 

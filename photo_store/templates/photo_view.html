@@ -6,9 +6,9 @@
         <p><img src="{{photo.image.url}}"></p>
         <p>{{ photo.description }}</p>
         {% for tag in photo.tags.all %}
-                <a href="{% url 'photo_store:tag_photos' tag_id=tag.id %}">#{{ tag.name }}</a>
+                <a href="{% url 'photo_store:tag_photos' pk=tag.id %}">#{{ tag.name }}</a>
         {% endfor %}
-        <form action="." method="POST">
+        <form action="{% url 'photo_store:create_tag' %}" method="POST">
                 {% csrf_token %}
                 {{ form.as_p }}
                 <p><input type="submit" value="Добавить тэг"></p>
