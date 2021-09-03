@@ -3,12 +3,12 @@
 
 {% block content %}
 
-  <form action="." method="POST">
+  <form action="{% url 'photo_store:edit_order' pk=order.id %}" method="POST">
     {% csrf_token %}
-    {{ order_form.as_p }}
+    {{ form.as_p }}
     {% if form.errors %}
       {% for error in form.errors %}
-        <p>{{error}}</p>
+        <p>{{ error }}</p>
       {% endfor %}
     {% endif %}
     <p><input type="submit" value="Изменить"></p>

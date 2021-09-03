@@ -74,13 +74,13 @@
     <h2>Заказы</h2>
 {% endif %}
     {% for order in user.order_set.all %}
-            <p><a href="{% url 'photo_store:order' order_id=order.id %}">{{ order }}</a></p>
+            <p><a href="{% url 'photo_store:order' pk=order.id %}">{{ order }}</a></p>
         {% endfor %}
 
 {% if user.id == request.user.id %}
     <h2>Мои отклики</h2>
     {% for my_response in user.response_set.all %}
-            <p><a href="{% url 'photo_store:order' order_id=my_response.order.id %}">{{ my_response }}</a></p>
+            <p><a href="{% url 'photo_store:order' pk=my_response.order.id %}">{{ my_response }}</a></p>
     {% endfor %}
 {% endif %}
 {% endblock %}

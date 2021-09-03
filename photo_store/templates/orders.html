@@ -5,7 +5,7 @@
 
     <h2>Заказы</h2>
     <p>{% for order in user_orders %}</p>
-            <a href="/order/{{ order.id }}">{{ order }}</a>
+            <a href="{% url 'photo_store:order' pk=order.id %}">{{ order }}</a>
         {% endfor %}
     <form action="{% url 'photo_store:create_order' %}" method="POST">
         {% csrf_token %}

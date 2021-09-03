@@ -17,7 +17,7 @@
         <p><a href="{% url 'photo_store:orders' %}">назад</a></p>
     {% elif current_order.owner == user and not accepted_response %}
         <p>Это ваш заказ</p>
-        <p><a href="{% url 'photo_store:edit_order' order_id=current_order.id %}">Редактировать</a></p>
+        <p><a href="{% url 'photo_store:edit_order' pk=current_order.id %}">Редактировать</a></p>
         <p><a href="{% url 'photo_store:del_order' pk=current_order.id %}">Удалить заказ</a></p>
         <p><a href="{% url 'photo_store:orders' %}">назад</a></p>
     {% elif current_order.owner == user and accepted_response %}
@@ -45,12 +45,12 @@
             {% if current_order.owner == request.user %}
                 {% for response in current_order.response_set.all %}
                     <p>Рейтинг фотографа: {{ response.photographer.avg_rate }}</p>
-                    <a href="{% url 'photo_store:show_profile' user_id=response.photographer_id %}"><p>{{ response.photographer }}</p></a>
+                    <a href="{% url 'photo_store:show_profile' pk=response.photographer_id %}"><p>{{ response.photographer }}</p></a>
                     <p>{{ response.text }}</p>
                     <p>Мои работы:</p>
                     {% for photo in photo_list %}
                         {% if photo.photographer == response.photographer and photo.response and photo.response.order.topic == current_order.topic %}
-                            <a href="{% url 'photo_store:order' order_id=photo.response.order_id %}"><img src="{{ photo.image.url }}" style="width: 15%"></a>
+                            <a href="{% url 'photo_store:order' pk=photo.response.order.id %}"><img src="{{ photo.image.url }}" style="width: 15%"></a>
                         {% endif %}
                     {% endfor %}
                     <p><a href="{% url 'photo_store:select_response' response_id=response.id %}"><input type="submit" value="выбрать"></a></p>
@@ -58,11 +58,11 @@
                 {% endfor %}
             {% else %}
                 {% for response in current_order.response_set.all %}
-                    <a href="{% url 'photo_store:show_profile' user_id=response.photographer.id %}"><p>{{ response.photographer }}</p></a>
+                    <a href="{% url 'photo_store:show_profile' pk=response.photographer.id %}"><p>{{ response.photographer }}</p></a>
                 {% endfor %}
             {% endif %}
     {% else %}
-        <p>Исполнитель: <a href="{% url 'photo_store:show_profile' user_id=accepted_response.photographer.id %}">{{ accepted_response.photographer }}</a></p>
+        <p>Исполнитель: <a href="{% url 'photo_store:show_profile' pk=accepted_response.photographer.id %}">{{ accepted_response.photographer }}</a></p>
         {% if not current_order.is_public and current_order.owner == request.user or accepted_response.photographer == request.user%}
             <p><h2>Фотографии:</h2></p>
             {% for photo in photo_list %}

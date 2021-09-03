@@ -2,6 +2,8 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 import datetime
+from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
 
 
 class User(AbstractUser):
@@ -32,7 +34,7 @@ class Photo(models.Model):
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=30, verbose_name='имя тэга')
+    name = models.CharField(max_length=30, verbose_name='имя тэга', unique=True)
 
     def __str__(self):
         return self.name
@@ -58,14 +60,25 @@ class Message(models.Model):
         ordering = ('-date_time',)
 
 
+def is_correct_date(date):
+    if date < date.today():
+        raise ValidationError('Дата не может быть раньше текущей')
+
+
 class Order(models.Model):
     date_time = models.DateTimeField(verbose_name='дата', default=datetime.datetime.now)
     topic = models.ForeignKey('Topic', on_delete=models.CASCADE, verbose_name='тема_задачи')
     text = models.TextField(blank=True, null=True, verbose_name='описание_задачи')
-    price = models.IntegerField(verbose_name='цена')
+    price = models.IntegerField(verbose_name='цена',
+                                validators=(MinValueValidator(1, 'минимальная цена не может быть меньше еденицы'),))
     is_public = models.BooleanField(default=True, verbose_name='публично (фотографии смогут увидеть все)')
     owner = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='клиент')  # заказчик
-    #  photographer = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='исполнитель')
+    start_date = models.DateField(verbose_name='дата начала', validators=(is_correct_date,))
+    finish_date = models.DateField(verbose_name='дата завершения', validators=(is_correct_date,))
+
+    def clean(self):
+        if self.start_date > self.finish_date:
+            raise ValidationError('Стартовая дата не может быть позже даты окончания заказа')
 
     def __str__(self):
         return f'Клиент {self.owner}, тема заказа {self.topic}'

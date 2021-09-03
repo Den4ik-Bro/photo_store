@@ -348,6 +348,11 @@ class OrderCreateView(generic.CreateView):
                 orders.append(instance)
             Order.objects.bulk_create(orders)
             return redirect(reverse('photo_store:profile'))
+        return render(request, 'orders.html', {'user_orders': Order.objects.only('topic', 'owner',)\
+                                                                        .select_related('owner', 'topic')\
+                                                                        .all().exclude(owner=request.user),
+                                               'formset': formset})
+
 
 
 # def orders(request):
@@ -384,81 +389,109 @@ class OrderCreateView(generic.CreateView):
 #     return redirect('/orders/')
 
 
-def get_order(request, order_id):
-    """просмотр заказа и добавление отклика на заказ"""
-    order = Order.objects.only('topic', 'owner', 'price', 'text')\
-                        .select_related('topic', 'owner')\
-                        .prefetch_related\
-                            (
-                                Prefetch
-                                    (
-                                        'response_set',
-                                        Response.objects.prefetch_related
-                                            (
-                                                Prefetch
-                                                    (
-                                                        'photographer',
-                                                        User.objects.filter(is_photographer=True)\
-                                                                    .prefetch_related
-                                                                        (
-                                                                            Prefetch
-                                                                                (
-                                                                                    'response_set',
-                                                                                    Response.objects.filter(is_selected=True)
-                                                                                 )
-                                                                        )
-                                                                    .annotate(avg_rate=Avg('response__rate')))
-                                            ))
-                            )\
-                        .get(id=order_id)
-    is_user_has_response = order.response_set.filter(photographer=request.user).exists()
-    accepted_response = order.response_set.filter(is_selected=True).first()
-    # rate_photographer = Response.objects.filter(photographer=user).aggregate(Avg('rate')) средний рейтинг фотографа
-    if request.method == 'POST':  # добавить отклик
-        form = ResponseForm(request.POST)
-        photo_form = PhotoForm(request.POST, request.FILES)
-        rate_response_form = RateResponseForm(request.POST)
-        if form.is_valid():                             # добавить отклик
-            response = form.save(commit=False)
-            response.order = order
-            response.photographer = request.user
-            response.is_selected = False
-            response.save()
-            Message.objects.create(text=response.text,   # сообщение заказчику от исполнителя
-                                   sender=response.photographer,
-                                   receiver=order.owner)
-            return redirect(reverse('photo_store:response sent'))
-        if photo_form.is_valid():                        # добавить фотку к заказу
-            photo = photo_form.save(commit=False)
-            photo.photographer = request.user
-            photo.response = order.response_set.get(is_selected=True)
-            photo.save()
-            return redirect(reverse('photo_store:order', kwargs={'order_id': order.id})) # '/order/' + str(order.id) + '/'
-        if rate_response_form.is_valid():                 # добавить оценку и отзыв выполненого заказа
-            rate_comment = rate_response_form.save(commit=False)
-            accepted_response.comment = rate_comment.comment
-            accepted_response.rate = rate_comment.rate
-            accepted_response.save()
-            return redirect(reverse('photo_store:order', kwargs={'order_id': order.id}))
-    form = ResponseForm()
-    photo_form = PhotoForm()
-    rate_response_form = RateResponseForm()
-    context = {'current_order': order,
-               'is_user_has_response': is_user_has_response,
-               'accepted_response': accepted_response,
-               'form': form,
-               'photo_form': photo_form,
-               'rate_response_form': rate_response_form}
-    if accepted_response:
-        photos = Photo.objects.select_related('response', 'photographer').filter(response=accepted_response)
-        context['photo_list'] = photos
-        print(photos)
-    else:
-        photos = Photo.objects.only('image').order_by('?').filter(response__isnull=False)
-        #  user.response_set.aggregate(Avg('rate')))
-        context['photo_list'] = photos[:1]
-        # context['rate'] =
-    return render(request, 'order_info.html', context)
+class GetOrderDetailView(generic.DetailView):
+    model = Order
+    template_name = 'order_info.html'
+    context_object_name = 'current_order'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        form = ResponseForm()
+        photo_form = PhotoForm()
+        rate_response_form = RateResponseForm()
+        order = self.get_object()
+        is_user_has_response = order.response_set.filter(photographer=self.request.user).exists()
+        accepted_response = order.response_set.filter(is_selected=True).first()
+        context['form'] = form
+        context['photo_form'] = photo_form
+        context['rate_response_form'] = rate_response_form
+        context['is_user_has_response'] = is_user_has_response
+        context['accepted_response'] = accepted_response
+        if accepted_response:
+            photos = Photo.objects.select_related('response', 'photographer').filter(response=accepted_response)
+            context['photo_list'] = photos
+            print(photos)
+        else:
+            photos = Photo.objects.only('image').order_by('?').filter(response__isnull=False)
+            context['photo_list'] = photos[:1]
+        return context
+
+
+# def get_order(request, order_id):
+#     """просмотр заказа и добавление отклика на заказ"""
+#     order = Order.objects.only('topic', 'owner', 'price', 'text')\
+#                         .select_related('topic', 'owner')\
+#                         .prefetch_related\
+#                             (
+#                                 Prefetch
+#                                     (
+#                                         'response_set',
+#                                         Response.objects.prefetch_related
+#                                             (
+#                                                 Prefetch
+#                                                     (
+#                                                         'photographer',
+#                                                         User.objects.filter(is_photographer=True)\
+#                                                                     .prefetch_related
+#                                                                         (
+#                                                                             Prefetch
+#                                                                                 (
+#                                                                                     'response_set',
+#                                                                                     Response.objects.filter(is_selected=True)
+#                                                                                  )
+#                                                                         )
+#                                                                     .annotate(avg_rate=Avg('response__rate')))
+#                                             ))
+#                             )\
+#                         .get(pk=order_id)
+#     is_user_has_response = order.response_set.filter(photographer=request.user).exists()
+#     accepted_response = order.response_set.filter(is_selected=True).first()
+#     # rate_photographer = Response.objects.filter(photographer=user).aggregate(Avg('rate')) средний рейтинг фотографа
+#     if request.method == 'POST':  # добавить отклик
+#         form = ResponseForm(request.POST)
+#         photo_form = PhotoForm(request.POST, request.FILES)
+#         rate_response_form = RateResponseForm(request.POST)
+#         if form.is_valid():                             # добавить отклик
+#             response = form.save(commit=False)
+#             response.order = order
+#             response.photographer = request.user
+#             response.is_selected = False
+#             response.save()
+#             Message.objects.create(text=response.text,   # сообщение заказчику от исполнителя
+#                                    sender=response.photographer,
+#                                    receiver=order.owner)
+#             return redirect(reverse('photo_store:response sent'))
+#         if photo_form.is_valid():                        # добавить фотку к заказу
+#             photo = photo_form.save(commit=False)
+#             photo.photographer = request.user
+#             photo.response = order.response_set.get(is_selected=True)
+#             photo.save()
+#             return redirect(reverse('photo_store:order', kwargs={'pk': order.id})) # '/order/' + str(order.id) + '/'
+#         if rate_response_form.is_valid():                 # добавить оценку и отзыв выполненого заказа
+#             rate_comment = rate_response_form.save(commit=False)
+#             accepted_response.comment = rate_comment.comment
+#             accepted_response.rate = rate_comment.rate
+#             accepted_response.save()
+#             return redirect(reverse('photo_store:order', kwargs={'pk': order.id}))
+#     form = ResponseForm()
+#     photo_form = PhotoForm()
+#     rate_response_form = RateResponseForm()
+#     context = {'current_order': order,
+#                'is_user_has_response': is_user_has_response,
+#                'accepted_response': accepted_response,
+#                'form': form,
+#                'photo_form': photo_form,
+#                'rate_response_form': rate_response_form}
+#     if accepted_response:
+#         photos = Photo.objects.select_related('response', 'photographer').filter(response=accepted_response)
+#         context['photo_list'] = photos
+#         print(photos)
+#     else:
+#         photos = Photo.objects.only('image').order_by('?').filter(response__isnull=False)
+#         #  user.response_set.aggregate(Avg('rate')))
+#         context['photo_list'] = photos[:1]
+#         # context['rate'] =
+#     return render(request, 'order_info.html', context)
 
 
 def select_response(request, response_id):
@@ -478,22 +511,31 @@ def select_response(request, response_id):
     return redirect(reverse('photo_store:order', kwargs={'order_id': order.id}))
 
 
-def edit_order(request, order_id):
-    """редактирование заказа"""
-    order = Order.objects.get(id=order_id)
-    if request.method == 'POST':
-        form = OrderForm(request.POST, instance=order)
-        if form.is_valid():
-            form.save()
-            # order.text = form.cleaned_data['text']
-            # order.price = form.cleaned_data['price']
-            # order.save()
-            return redirect(reverse('photo_store:order', kwargs={'order_id': order.id}))
-    else:
-        form = OrderForm(initial=model_to_dict(order))
-    return render(request, 'edit_order.html', {
-        'order_form': form
-    })
+class EditOrderUpdateView(generic.UpdateView):
+    model = Order
+    form_class = OrderForm
+    template_name = 'edit_order.html'
+
+    def get_success_url(self):
+        return reverse('photo_store:profile')
+
+
+# def edit_order(request, order_id):
+#     """редактирование заказа"""
+#     order = Order.objects.get(id=order_id)
+#     if request.method == 'POST':
+#         form = OrderForm(request.POST, instance=order)
+#         if form.is_valid():
+#             form.save()
+#             # order.text = form.cleaned_data['text']
+#             # order.price = form.cleaned_data['price']
+#             # order.save()
+#             return redirect(reverse('photo_store:order', kwargs={'order_id': order.id}))
+#     else:
+#         form = OrderForm(initial=model_to_dict(order))
+#     return render(request, 'edit_order.html', {
+#         'order_form': form
+#     })
 
 
 class DeleteOrderView(generic.DeleteView):
@@ -550,12 +592,13 @@ class TagCreateView(generic.CreateView):
     form_class = TagForm
     template_name = 'photo_view.html'
 
-    def form_valid(self, form):
-        form.save()
-        return super().form_valid(form)
+    def post(self, request, photo_id):
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            tag = form.save()
+            tag.photo_set.add(Photo.objects.get(pk=photo_id))
+        return redirect(reverse('photo_store:photo_view', kwargs={'pk': photo_id}))
 
-    def get_success_url(self):
-        return reverse('photo_store:photo_view', kwargs={'pk': 7})
 
 # def photo_view(request, photo_id):
 #     """функия просмотра отдельной фотографии"""
