@@ -20,7 +20,7 @@ urlpatterns = [
 
     ])),
     # path('message/<int:conversationer_id>/', views.view_message, name='show_messages'),
-    path('message/<int:pk>/', views.ViewMessageList.as_view(), name='show_messages'),
+    path('message/<int:pk>/', views.ViewMessage.as_view(), name='show_messages'),
     # path('orders/', views.orders, name='orders'),
     path('orders/', views.OrderListView.as_view(), name='orders'),
     path('create_order/', views.OrderCreateView.as_view(), name='create_order'),

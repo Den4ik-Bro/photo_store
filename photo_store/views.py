@@ -302,7 +302,7 @@ class InviteToOrders(generic.CreateView):
 #     return redirect(reverse('photo_store:photographers'))
 
 
-class ViewMessageList(generic.DetailView):
+class ViewMessage(generic.DetailView):
     model = User
     template_name = 'message.html'
 
@@ -322,6 +322,7 @@ class ViewMessageList(generic.DetailView):
         context['form'] = SendMessageForm()
         context['message_list'] = message_list
         return context
+
 
 def view_message(request, conversationer_id):
     """посмотреть переписку"""
