@@ -53,7 +53,7 @@
 <!--        <p>{{ message.date_time }}</p>-->
 <!--        <p>Кто: {{ message.sender }}</p>-->
 <!--        <p>Текст: {{ message.text }}</p>-->
-        <a href="{% url 'photo_store:show_messages' conversationer_id=conversationer.id %}">
+        <a href="{% url 'photo_store:show_messages' pk=conversationer.id %}">
             <p><input type="button" value="ответить"></p>
         </a>
 <!--        <p>Кому: {{ message.receiver }}</p>-->

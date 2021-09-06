@@ -1,8 +1,6 @@
 from itertools import chain
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth.models import User
-from django.urls import reverse_lazy
-
 from .models import Photo, Message, Order, Topic, Response, Tag
 from django.db.models import Q, Prefetch, Avg, Count
 from .forms import ProfileForm, OrderForm, ResponseForm, PhotoForm, SendMessageForm, RegistrationUserForm, TagForm, \
@@ -223,6 +221,7 @@ class DeletePhotoView(generic.DeleteView):
     def get(self, request, pk):
         return self.post(request, pk)
 
+
 # def del_photo(request, photo_id):
 #     """Функция удаления фотографии. Комментарий от Леонида"""
 #     # if request.method == 'POST':
@@ -232,36 +231,97 @@ class DeletePhotoView(generic.DeleteView):
 #     return redirect(reverse('photo_store:show_profile', kwargs={'user_id': user.id})) # '/profile/' + str(user.id) + '/'
 
 
-def photographers(request):
-    """список пользователей которые являются фотографами"""
-    InviteFormSet = modelformset_factory(User, InviteForm, extra=0)
-    form_set = InviteFormSet(queryset=User.objects.filter(is_photographer=True)
-                             .exclude(pk=request.user.id)
-                             .annotate(avg_rate=Avg('response__rate')), form_kwargs={'owner': request.user})
-    return render(request, 'photographers.html', {
-        'form_set': form_set
-      })
+class PhotographersListView(generic.ListView):
+    model = User
+    # queryset = User.objects.filter(is_photographer=True)
+    context_object_name = 'user'
+    template_name = 'photographers.html'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        InviteFormSet = modelformset_factory(User, InviteForm, extra=0)
+        context['form_set'] = InviteFormSet(queryset=User.objects.filter(is_photographer=True)
+                                 .exclude(pk=self.request.user.id)
+                                 .annotate(avg_rate=Avg('response__rate')), form_kwargs={'owner': self.request.user})
+        return context
 
 
-def invite_to_orders(request):
-    if request.method == 'POST':
+# def photographers(request):
+#     """список пользователей которые являются фотографами"""
+#     InviteFormSet = modelformset_factory(User, InviteForm, extra=0)
+#     form_set = InviteFormSet(queryset=User.objects.filter(is_photographer=True)
+#                              .exclude(pk=request.user.id)
+#                              .annotate(avg_rate=Avg('response__rate')), form_kwargs={'owner': request.user})
+#     return render(request, 'photographers.html', {
+#         'form_set': form_set
+#       })
+
+
+class InviteToOrders(generic.CreateView):
+    model = Order
+
+    def post(self, request, *args, **kwargs):
         InviteFormSet = modelformset_factory(User, InviteForm, extra=0)
         form_set = InviteFormSet(request.POST, form_kwargs={'owner': request.user})
+        print(request.POST)
         if form_set.is_valid():
-            for form in form_set:
-                receiver = form.cleaned_data["id"]
-                order = form.cleaned_data["orders"]
-                order_url = reverse('photo_store:order', kwargs={'order_id': order.id})
-                Message.objects.create(
-                    receiver=receiver,
-                    sender=request.user,
-                    text=f'{request.user} приглащает вас на съемку <a href="{order_url}">{order}</a>'
-                )
-            return redirect(reverse('photo_store:profile'))
+            print('ok')
+            # instances = form_set.save(commit=False)
+            # for instance in instances:
+            #     receiver = instance.cleaned_data["id"]
+            #     order = instance.cleaned_data["orders"]
+            #     order_url = reverse('photo_store:order', kwargs={'order_id': order.id})
+            #     Message.objects.create(
+            #         receiver=receiver,
+            #         sender=request.user,
+            #         text=f'{request.user} приглащает вас на съемку <a href="{order_url}">{order}</a>'
+            #     )
+            return redirect(reverse('photo_store:show_profile', kwargs={'pk': self.request.user.id}))
         else:
-            print(form_set.errors)
-    return redirect(reverse('photo_store:photographers'))
+            return redirect(reverse('photo_store:photographers'))
 
+
+# def invite_to_orders(request):
+#     if request.method == 'POST':
+#         InviteFormSet = modelformset_factory(User, InviteForm, extra=0)
+#         form_set = InviteFormSet(request.POST, form_kwargs={'owner': request.user})
+#         if form_set.is_valid():
+#             print('ok')
+#             # for form in form_set:
+#             #     receiver = form.cleaned_data["id"]
+#             #     order = form.cleaned_data["orders"]
+#             #     order_url = reverse('photo_store:order', kwargs={'order_id': order.id})
+#             #     Message.objects.create(
+#             #         receiver=receiver,
+#             #         sender=request.user,
+#             #         text=f'{request.user} приглащает вас на съемку <a href="{order_url}">{order}</a>'
+#             #     )
+#             return redirect(reverse('photo_store:show_profile', kwargs={'pk': request.user.id}))
+#         else:
+#             print(form_set.errors)
+#     return redirect(reverse('photo_store:photographers'))
+
+
+class ViewMessageList(generic.DetailView):
+    model = User
+    template_name = 'message.html'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        conversation_id = self.get_object()  # id того с кем открываем переписку
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        conversationer = User.objects.get(pk=conversation_id.id)
+        text_message = Message.objects.select_related('sender', 'receiver').filter(
+            sender=conversationer,
+            receiver=self.request.user
+        )
+        text_message_user = Message.objects.select_related('sender', 'receiver').filter(
+            sender=self.request.user,
+            receiver=conversationer
+        )
+        message_list = sorted(chain(text_message, text_message_user), key=lambda instance: instance.date_time)
+        context['form'] = SendMessageForm()
+        context['message_list'] = message_list
+        return context
 
 def view_message(request, conversationer_id):
     """посмотреть переписку"""
