@@ -33,7 +33,7 @@
     {% endif %}
     {% if accepted_response and current_order.owner == user %}
         {% if not accepted_response.rate or not accepted_response.comment %}
-            <form action="." method="POST">
+            <form action="{% url 'photo_store:create_rate_response' pk=current_order.id %}" method="POST">
                 {% csrf_token %}
                 {{ rate_response_form.as_p }}
                 <input type="submit" value="Оставить оценку">
@@ -79,7 +79,7 @@
     {% endif %}
     {% if accepted_response.photographer == request.user %}
         <p><h3>загрузить фотографии</h3></p>
-        <form action="." method="POST" enctype="multipart/form-data">
+        <form action="{% url 'photo_store:create_response_photo' pk=current_order.id %}" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             {{ photo_form.as_p }}
             <p><input type="submit" value="Добавить"></p>

@@ -258,6 +258,7 @@ class PhotographersListView(generic.ListView):
 
 
 class InviteToOrders(generic.CreateView):
+    """!!! НЕ СДЕЛАН !!!"""
     model = Order
 
     def post(self, request, *args, **kwargs):
@@ -340,7 +341,7 @@ class CreateMessage(generic.CreateView):
             new_message.receiver = conversationer
             new_message.save()
             return(redirect(reverse('photo_store:show_messages', kwargs={'pk': user_id})))
-        return redirect(reverse('photo_store:index'))
+        return redirect(reverse('photo_store:index'))  # надо будет над редиректом подумать
 
 
 # def view_message(request, conversationer_id):
@@ -574,11 +575,40 @@ class GetOrderDetailView(generic.DetailView):
 
 
 class CreateRateResponse(generic.CreateView):
-    pass
+    model = Response
+    template_name = 'order_info.html'
+
+    def post(self, request, pk):
+        order = Order.objects.get(pk=pk)
+        rate_response_form = RateResponseForm(request.POST)
+        for response in order.response_set.all():
+            if response.is_selected == True:
+                current_response = response
+        if rate_response_form.is_valid():
+            rate_comment = rate_response_form.save(commit=False)
+            current_response.comment = rate_comment.comment
+            current_response.rate = rate_comment.rate
+            current_response.save()
+            return redirect(reverse('photo_store:order', kwargs={'pk': order.id}))
+        else:
+            return redirect(reverse('photo_store:order', kwargs={'pk': order.id}))
 
 
 class CreateResponsePhoto(generic.CreateView):
-    pass
+    model = Photo
+    template_name = 'order_info.html'
+
+    def post(self, request, pk):
+        order = Order.objects.get(pk=pk)
+        photo_form = PhotoForm(request.POST, request.FILES)
+        if photo_form.is_valid():
+            photo = photo_form.save(commit=False)
+            photo.photographer = self.request.user
+            for response in order.response_set.all():  # перебираем респонсы что бы вытащить тот где is_selected = True
+                if response.is_selected == True:
+                    photo.response = response
+            photo.save()
+            return redirect(reverse('photo_store:order', kwargs={'pk': order.id}))
 
 
 class SelectResponseView(generic.UpdateView):
