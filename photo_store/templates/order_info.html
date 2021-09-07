@@ -53,7 +53,7 @@
                             <a href="{% url 'photo_store:order' pk=photo.response.order.id %}"><img src="{{ photo.image.url }}" style="width: 15%"></a>
                         {% endif %}
                     {% endfor %}
-                    <p><a href="{% url 'photo_store:select_response' response_id=response.id %}"><input type="submit" value="выбрать"></a></p>
+                    <p><a href="{% url 'photo_store:select_response' pk=response.id %}"><input type="submit" value="выбрать"></a></p>
                     ======================================
                 {% endfor %}
             {% else %}

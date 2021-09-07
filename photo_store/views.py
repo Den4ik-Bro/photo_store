@@ -321,35 +321,54 @@ class ViewMessage(generic.DetailView):
         message_list = sorted(chain(text_message, text_message_user), key=lambda instance: instance.date_time)
         context['form'] = SendMessageForm()
         context['message_list'] = message_list
+        context['conversation_id'] = conversation_id
         return context
 
 
-def view_message(request, conversationer_id):
-    """посмотреть переписку"""
-    conversationer = User.objects.get(pk=conversationer_id)
-    text_message = Message.objects.select_related('sender', 'receiver').filter(
-        sender=conversationer,
-        receiver=request.user
-    )
-    text_message_user = Message.objects.select_related('sender', 'receiver').filter(
-        sender=request.user,
-        receiver=conversationer
-    )
-    message_list = sorted(chain(text_message, text_message_user), key=lambda instance: instance.date_time)
-    form = SendMessageForm()
-    if request.method == 'POST':
-        form = SendMessageForm(request.POST)
+class CreateMessage(generic.CreateView):
+    model = Message
+    template_name = 'message.html'
+    form_class = SendMessageForm
+
+    def post(self, request, user_id):
+        form = self.form_class(request.POST)
+        conversationer = User.objects.get(pk=user_id)
         if form.is_valid():
+            print('ok')
             new_message = form.save(commit=False)
             new_message.sender = request.user
             new_message.receiver = conversationer
             new_message.save()
-            return redirect(reverse('photo_store:show_messages',  # '/message/' + str(conversationer_id) + '/'
-                                    kwargs={'conversationer_id': conversationer_id}))
-    return render(request, 'message.html', {
-        'message_list': message_list,
-        'form': form
-    })
+            return(redirect(reverse('photo_store:show_messages', kwargs={'pk': user_id})))
+        return redirect(reverse('photo_store:index'))
+
+
+# def view_message(request, conversationer_id):
+#     """посмотреть переписку"""
+#     conversationer = User.objects.get(pk=conversationer_id)
+#     text_message = Message.objects.select_related('sender', 'receiver').filter(
+#         sender=conversationer,
+#         receiver=request.user
+#     )
+#     text_message_user = Message.objects.select_related('sender', 'receiver').filter(
+#         sender=request.user,
+#         receiver=conversationer
+#     )
+#     message_list = sorted(chain(text_message, text_message_user), key=lambda instance: instance.date_time)
+#     form = SendMessageForm()
+#     if request.method == 'POST':
+#         form = SendMessageForm(request.POST)
+#         if form.is_valid():
+#             new_message = form.save(commit=False)
+#             new_message.sender = request.user
+#             new_message.receiver = conversationer
+#             new_message.save()
+#             return redirect(reverse('photo_store:show_messages',  # '/message/' + str(conversationer_id) + '/'
+#                                     kwargs={'conversationer_id': conversationer_id}))
+#     return render(request, 'message.html', {
+#         'message_list': message_list,
+#         'form': form
+#     })
 
 
 # def orders_test(request):
@@ -413,7 +432,6 @@ class OrderCreateView(generic.CreateView):
                                                                         .select_related('owner', 'topic')\
                                                                         .all().exclude(owner=request.user),
                                                'formset': formset})
-
 
 
 # def orders(request):
@@ -509,9 +527,9 @@ class GetOrderDetailView(generic.DetailView):
 #     accepted_response = order.response_set.filter(is_selected=True).first()
 #     # rate_photographer = Response.objects.filter(photographer=user).aggregate(Avg('rate')) средний рейтинг фотографа
 #     if request.method == 'POST':  # добавить отклик
-#         form = ResponseForm(request.POST)
-#         photo_form = PhotoForm(request.POST, request.FILES)
-#         rate_response_form = RateResponseForm(request.POST)
+#         form = ResponseForm(request.POST) # order_info.html, string 9
+#         photo_form = PhotoForm(request.POST, request.FILES) # order_info.html, string 82
+#         rate_response_form = RateResponseForm(request.POST) # order_info.html, string 36
 #         if form.is_valid():                             # добавить отклик
 #             response = form.save(commit=False)
 #             response.order = order
@@ -555,21 +573,53 @@ class GetOrderDetailView(generic.DetailView):
 #     return render(request, 'order_info.html', context)
 
 
-def select_response(request, response_id):
-    """функция выбора отклика"""
-    response = Response.objects.get(pk=response_id)
-    order = response.order
-    order_url = '/order/' + str(order.id) + '/'  # 'url "photo_store:order" order_id=order.id'
-    response.is_selected = True
-    response.save()
-    Message.objects.create(text=f'Вас выбрали исполнителем заказа <a href="{order_url}">{order}</a>',
-                           sender=order.owner,
-                           receiver=response.photographer)
-    del_response = Response.objects.filter(order=order)
-    for s in del_response:
-        if not s.is_selected:
-            s.delete()
-    return redirect(reverse('photo_store:order', kwargs={'order_id': order.id}))
+class CreateRateResponse(generic.CreateView):
+    pass
+
+
+class CreateResponsePhoto(generic.CreateView):
+    pass
+
+
+class SelectResponseView(generic.UpdateView):
+    """аналог функции select_response"""
+    model = Response
+    # queryset = Response.objects.all()
+    template_name = 'order_info.html'
+
+    # def get(self, request, pk):
+    #     return self.post(request, pk)
+
+    def get(self, request, pk):
+        response = Response.objects.get(pk=pk)
+        order = response.order
+        response.is_selected = True
+        response.save()
+        order_url = reverse('photo_store:order', kwargs={'pk': order.id})
+        Message.objects.create(text=f'Вас выбрали исполнителем заказа <a href="{order_url}">{order}</a>',
+                               sender=order.owner,
+                               receiver=response.photographer)
+        # del_response = Response.objects.filter(order=order)
+        # for s in del_response:
+        #     if not s.is_selected:
+        #         s.delete()
+        return redirect(reverse('photo_store:order', kwargs={'pk': order.id}))
+
+# def select_response(request, response_id):
+#     """функция выбора отклика"""
+#     response = Response.objects.get(pk=response_id)
+#     order = response.order
+#     order_url = '/order/' + str(order.id) + '/'  # 'url "photo_store:order" order_id=order.id'
+#     response.is_selected = True
+#     response.save()
+#     Message.objects.create(text=f'Вас выбрали исполнителем заказа <a href="{order_url}">{order}</a>',
+#                            sender=order.owner,
+#                            receiver=response.photographer)
+#     del_response = Response.objects.filter(order=order)
+#     for s in del_response:
+#         if not s.is_selected:
+#             s.delete()
+#     return redirect(reverse('photo_store:order', kwargs={'order_id': order.id}))
 
 
 class EditOrderUpdateView(generic.UpdateView):
