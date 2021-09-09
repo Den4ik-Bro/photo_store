@@ -9,6 +9,7 @@ from django.forms.models import model_to_dict
 from django.contrib.auth import get_user_model, authenticate, login
 from django.forms import modelformset_factory, formset_factory
 from django.views import generic
+from django.core.mail import send_mail
 
 User = get_user_model()
 
@@ -31,20 +32,20 @@ class ProfileDetailView(generic.DetailView):
     model = User
     template_name = 'profile.html'
 
-    def get_object(self, queryset=None):
-        return super().get_queryset().prefetch_related\
-        (
-            Prefetch('order_set', Order.objects.select_related('topic', 'owner').filter(owner=self.request.user))
-        )\
-        .prefetch_related\
-        (
-            Prefetch('response_set', Response.objects.select_related('photographer', 'order').filter(photographer=self.request.user))
-        )\
-        .prefetch_related\
-        (
-            Prefetch('received_messages', Message.objects.select_related('sender', 'receiver').all())
-        )\
-        .annotate(avg_rate=Avg('response__rate')).get(pk=self.request.user.id)
+    # def get_object(self, queryset=None):
+    #     return super().get_queryset().prefetch_related\
+    #     (
+    #         Prefetch('order_set', Order.objects.select_related('topic', 'owner').filter(owner=self.request.user))
+    #     )\
+    #     .prefetch_related\
+    #     (
+    #         Prefetch('response_set', Response.objects.select_related('photographer', 'order').filter(photographer=self.request.user))
+    #     )\
+    #     .prefetch_related\
+    #     (
+    #         Prefetch('received_messages', Message.objects.select_related('sender', 'receiver').all())
+    #     )\
+    #     .annotate(avg_rate=Avg('response__rate')).get(pk=self.request.user.id)
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
@@ -258,25 +259,31 @@ class PhotographersListView(generic.ListView):
 
 
 class InviteToOrders(generic.CreateView):
-    """!!! НЕ СДЕЛАН !!!"""
     model = Order
 
     def post(self, request, *args, **kwargs):
         InviteFormSet = modelformset_factory(User, InviteForm, extra=0)
         form_set = InviteFormSet(request.POST, form_kwargs={'owner': request.user})
-        print(request.POST)
+        # print(form_set)
         if form_set.is_valid():
-            print('ok')
             # instances = form_set.save(commit=False)
-            # for instance in instances:
-            #     receiver = instance.cleaned_data["id"]
-            #     order = instance.cleaned_data["orders"]
-            #     order_url = reverse('photo_store:order', kwargs={'order_id': order.id})
-            #     Message.objects.create(
-            #         receiver=receiver,
-            #         sender=request.user,
-            #         text=f'{request.user} приглащает вас на съемку <a href="{order_url}">{order}</a>'
-            #     )
+            mail_list = []
+            for form in form_set:
+                receiver = form.cleaned_data['id']
+                order = form.cleaned_data['orders']
+                if order:
+                    order_url = reverse('photo_store:order', kwargs={'pk': order.id})
+                    text_message = f'{request.user} приглащает вас на съемку <a href="{order_url}">{order}</a>'
+                    Message.objects.create(
+                        receiver=receiver,
+                        sender=request.user,
+                        text= text_message
+                    )
+                    if receiver.email:
+                        mail_list.append(receiver.email)
+            send_mail('Photo_store: Вас пригласили в заказ!',
+                      text_message, 'admin@photo_store.ru',
+                      mail_list)
             return redirect(reverse('photo_store:show_profile', kwargs={'pk': self.request.user.id}))
         else:
             return redirect(reverse('photo_store:photographers'))
@@ -574,6 +581,32 @@ class GetOrderDetailView(generic.DetailView):
 #     return render(request, 'order_info.html', context)
 
 
+class CreateResponse(generic.CreateView):
+    model = Response
+    template_name = 'order_info.html'
+
+    def post(self, request, pk):
+        form = ResponseForm(request.POST)
+        order = Order.objects.get(pk=pk)
+        if form.is_valid():
+            response = form.save(commit=False)
+            response.order = order
+            response.photographer = request.user
+            response.is_selected = False
+            response.save()
+            Message.objects.create(text=response.text,   # сообщение заказчику от исполнителя
+                                   sender=response.photographer,
+                                   receiver=order.owner)
+            send_mail(
+                'Photo_Store: информация по заказу ' + order,
+                'На ваш заказ откликнулся ' +response.photographer,
+                'admin@photo_store.ru',
+                [order.owner.email]
+            )
+            # return redirect(reverse('photo_store:order', kwargs={'pk': order.id}))
+        return redirect(reverse('photo_store:order', kwargs={'pk': order.id}))
+
+
 class CreateRateResponse(generic.CreateView):
     model = Response
     template_name = 'order_info.html'
@@ -629,6 +662,12 @@ class SelectResponseView(generic.UpdateView):
         Message.objects.create(text=f'Вас выбрали исполнителем заказа <a href="{order_url}">{order}</a>',
                                sender=order.owner,
                                receiver=response.photographer)
+        send_mail(
+            'Photo_Store: информация по заказу ' + order,
+            'Поздровляем, вас выбрали исполнителем!',
+            'admin@photo_store.ru',
+            [response.photographer.email]
+        )
         # del_response = Response.objects.filter(order=order)
         # for s in del_response:
         #     if not s.is_selected:
@@ -787,6 +826,13 @@ class UserCreateView(generic.CreateView):
                 user.save()
                 login_user = authenticate(request, username=user.username, password=form.cleaned_data['password_1'])
                 login(request, login_user)
+                print(user.email)
+                send_mail(
+                    'Photo_Store: Добро пожаловать!',
+                    'Какой ты молодец!',
+                    'admin@photo_store.ru',
+                    [user.email]
+                          )
                 return redirect(reverse('photo_store:show_profile', kwargs={'pk': request.user.id}))
         else:
             return redirect('register/')

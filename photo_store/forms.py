@@ -99,7 +99,7 @@ class TagForm(forms.ModelForm):
 
 
 class InviteForm(forms.ModelForm):
-    orders = forms.ModelChoiceField(queryset=None, label='заказ')
+    orders = forms.ModelChoiceField(queryset=None, label='заказ', required=False)
 
     class Meta:
         model = User

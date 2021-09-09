@@ -6,7 +6,7 @@
     <p><h3>Фотографы:</h3></p>
     <form action="{% url 'photo_store:invite_to_orders' %}" method="POST">
         {% csrf_token %}
-        {{ formset.management_form }}
+        {{ form_set.management_form }}
         {% for form in form_set %}
         {% with user=form.instance %}
             <a href="{% url 'photo_store:show_profile' pk=user.id %}"><p>{{ user }}</p></a>

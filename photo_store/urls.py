@@ -34,6 +34,7 @@ urlpatterns = [
     path('ok/', views.OkView.as_view(), name='response sent'),
     # path('select_response/<int:response_id>/', views.select_response, name='select_response'),
     path('select_response/<int:pk>/', views.SelectResponseView.as_view(), name='select_response'),
+    path('create_response/<int:pk>', views.CreateResponse.as_view(), name='create_response'),
     path('create_response_photo/<int:pk>', views.CreateResponsePhoto.as_view(), name='create_response_photo'),
     path('create_rate_response/<int:pk>', views.CreateRateResponse.as_view(), name='create_rate_response'),
     path('photo_view/<int:pk>/', views.PhotoDetailView.as_view(), name='photo_view'),

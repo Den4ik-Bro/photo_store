@@ -6,7 +6,7 @@
     <p>Описание: {{current_order.text}}</p>
     <p>Цена: {{current_order.price}}</p>
     {% if not is_user_has_response and current_order.owner != user and not accepted_response and user.is_photographer%}
-        <form action="." method="POST">
+        <form action="{% url 'photo_store:create_response' pk=current_order.id %}" method="POST">
             {% csrf_token %}
             <h2>Отклик на заказ:</h2>
             {{ form.as_p }}
