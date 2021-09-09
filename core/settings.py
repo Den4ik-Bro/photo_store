@@ -118,10 +118,10 @@ USE_L10N = True
 USE_TZ = True
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.jino.ru'
-EMAIL_PORT = '25'
-EMAIL_HOST_USER = 'test@arpix.pro'
-EMAIL_HOST_PASSWORD = 'qwe1245!!'
+EMAIL_HOST = '****'
+EMAIL_PORT = '**'
+EMAIL_HOST_USER = '*********'
+EMAIL_HOST_PASSWORD = '*******'
 # EMAIL_USE_TLS = True
 # EMAIL_USE_SSL = True
 
