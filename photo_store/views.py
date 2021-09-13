@@ -1,6 +1,6 @@
 from itertools import chain
 from django.shortcuts import render, redirect, reverse
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from .models import Photo, Message, Order, Topic, Response, Tag
 from django.db.models import Q, Prefetch, Avg, Count
 from .forms import ProfileForm, OrderForm, ResponseForm, PhotoForm, SendMessageForm, RegistrationUserForm, TagForm, \
@@ -10,6 +10,18 @@ from django.contrib.auth import get_user_model, authenticate, login
 from django.forms import modelformset_factory, formset_factory
 from django.views import generic
 from django.core.mail import send_mail
+
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
+
+
+if not Permission.objects.filter(codename='can_execute').exists():
+    content_type = ContentType.objects.get_for_model(Order)
+    can_execute_permission = Permission.objects.create(
+        codename='can_execute',
+        name='can execute order',
+        content_type=content_type
+    )
 
 User = get_user_model()
 
@@ -32,20 +44,21 @@ class ProfileDetailView(generic.DetailView):
     model = User
     template_name = 'profile.html'
 
-    # def get_object(self, queryset=None):
-    #     return super().get_queryset().prefetch_related\
-    #     (
-    #         Prefetch('order_set', Order.objects.select_related('topic', 'owner').filter(owner=self.request.user))
-    #     )\
-    #     .prefetch_related\
-    #     (
-    #         Prefetch('response_set', Response.objects.select_related('photographer', 'order').filter(photographer=self.request.user))
-    #     )\
-    #     .prefetch_related\
-    #     (
-    #         Prefetch('received_messages', Message.objects.select_related('sender', 'receiver').all())
-    #     )\
-    #     .annotate(avg_rate=Avg('response__rate')).get(pk=self.request.user.id)
+    def get_object(self, queryset=None):
+        pk = self.kwargs.get(self.pk_url_kwarg)
+        return super().get_queryset().prefetch_related\
+        (
+            Prefetch('order_set', Order.objects.select_related('topic', 'owner').filter(owner=self.request.user))
+        )\
+        .prefetch_related\
+        (
+            Prefetch('response_set', Response.objects.select_related('photographer', 'order').filter(photographer=self.request.user))
+        )\
+        .prefetch_related\
+        (
+            Prefetch('received_messages', Message.objects.select_related('sender', 'receiver').all())
+        )\
+        .annotate(avg_rate=Avg('response__rate')).get(pk=pk)
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
@@ -426,6 +439,9 @@ class OrderCreateView(generic.CreateView):
     # form_class = OrderForm
 
     def post(self, request, *args, **kwargs):
+        if not request.user.has_perm('photo_store.add_order'):
+            print('NO')
+            return redirect(reverse('photo_store:profile'))
         OrderFormSet = modelformset_factory(Order, exclude=('date_time', 'owner'), extra=3)
         formset = OrderFormSet(request.POST)
         orders = []
@@ -598,8 +614,8 @@ class CreateResponse(generic.CreateView):
                                    sender=response.photographer,
                                    receiver=order.owner)
             send_mail(
-                'Photo_Store: информация по заказу ' + order,
-                'На ваш заказ откликнулся ' +response.photographer,
+                'Photo_Store: информация по заказу ' + str(order),
+                'На ваш заказ откликнулся ' + str(response.photographer),
                 'admin@photo_store.ru',
                 [order.owner.email]
             )
@@ -658,12 +674,15 @@ class SelectResponseView(generic.UpdateView):
         order = response.order
         response.is_selected = True
         response.save()
+        # response.photographer.permissions.add(can_execute_permission)
+        can_execute = Permission.objects.get(codename='can_execute')
+        response.photographer.user_permissions.add(can_execute)
         order_url = reverse('photo_store:order', kwargs={'pk': order.id})
         Message.objects.create(text=f'Вас выбрали исполнителем заказа <a href="{order_url}">{order}</a>',
                                sender=order.owner,
                                receiver=response.photographer)
         send_mail(
-            'Photo_Store: информация по заказу ' + order,
+            'Photo_Store: информация по заказу ' + str(order),
             'Поздровляем, вас выбрали исполнителем!',
             'admin@photo_store.ru',
             [response.photographer.email]
@@ -824,6 +843,12 @@ class UserCreateView(generic.CreateView):
             if form.cleaned_data['password_1'] == form.cleaned_data['password_2']:
                 user.set_password(form.cleaned_data['password_1'])
                 user.save()
+                if form.cleaned_data['is_photographer'] == True:
+                    photographer_group = Group.objects.get(name='Photographers')
+                    user.groups.add(photographer_group)
+                else:
+                    client_group = Group.objects.get(name='Client')
+                    user.groups.add(client_group)
                 login_user = authenticate(request, username=user.username, password=form.cleaned_data['password_1'])
                 login(request, login_user)
                 print(user.email)
