@@ -41,6 +41,7 @@ urlpatterns = [
     path('create_tag/<int:photo_id>/', views.TagCreateView.as_view(), name='create_tag'),
     path('del_photo/<int:pk>/', views.DeletePhotoView.as_view(), name='del_photo'),
     path('del_order/<int:pk>/', views.DeleteOrderView.as_view(), name='del_order'),
-    path('edit_order/<int:pk>/', views.EditOrderUpdateView.as_view(), name='edit_order')
+    path('edit_order/<int:pk>/', views.EditOrderUpdateView.as_view(), name='edit_order'),
+    path('test_ajax/', views.test_ajax)
 ]
 

@@ -9,5 +9,12 @@
     {% if user.is_authenticated %}
         <p><a href="{% url 'photo_store:photographers' %}">Поиск фотографа</a></p>
     {% endif %}
-
+    <a href='#'>Тест</a>
+    <p id="answer"></p>
+    <script>
+        let sender = new XMLHttpRequest();
+        sender.open('GET', '/test_ajax/', False);
+        sender.send();
+        console.log(sender.responseText);
+    </script>
 {% endblock %}

@@ -1,12 +1,15 @@
 {% extends 'base.html' %}
+{% load auth_extras %}
 {% block title %} Заказы {% endblock %}
 
 {% block content %}
 
-    <h2>Заказы</h2>
-    <p>{% for order in user_orders %}</p>
-            <a href="{% url 'photo_store:order' pk=order.id %}">{{ order }}</a>
-        {% endfor %}
+    {% if request.user|has_group:"Photographers" %}
+        <h2>Заказы</h2>
+        <p>{% for order in user_orders %}</p>
+                <a href="{% url 'photo_store:order' pk=order.id %}">{{ order }}</a>
+            {% endfor %}
+    {% endif %}
     <form action="{% url 'photo_store:create_order' %}" method="POST">
         {% csrf_token %}
         {{ formset.management_form }}

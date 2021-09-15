@@ -1,5 +1,6 @@
 from itertools import chain
 from django.shortcuts import render, redirect, reverse
+from django.http import HttpResponse
 from django.contrib.auth.models import User, Group
 from .models import Photo, Message, Order, Topic, Response, Tag
 from django.db.models import Q, Prefetch, Avg, Count
@@ -882,3 +883,5 @@ class UserCreateView(generic.CreateView):
 #     })
 
 
+def test_ajax(request):
+    return HttpResponse('мой первый ajax ответ')
