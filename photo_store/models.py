@@ -72,8 +72,8 @@ class Order(models.Model):
                                 validators=(MinValueValidator(1, 'минимальная цена не может быть меньше еденицы'),))
     is_public = models.BooleanField(default=True, verbose_name='публично (фотографии смогут увидеть все)')
     owner = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='клиент')  # заказчик
-    start_date = models.DateField(verbose_name='дата начала', validators=(is_correct_date,))
-    finish_date = models.DateField(verbose_name='дата завершения', validators=(is_correct_date,))
+    start_date = models.DateField(verbose_name='дата начала', null=True, blank=True, validators=(is_correct_date,))
+    finish_date = models.DateField(verbose_name='дата завершения', null=True, blank=True, validators=(is_correct_date,))
 
     def clean(self):
         if self.start_date > self.finish_date:

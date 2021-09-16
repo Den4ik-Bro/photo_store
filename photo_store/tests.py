@@ -1,8 +1,9 @@
+from django.forms import modelformset_factory
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from django.db.models import Max, F
+from django.db.models import Max, F, Avg
 from .models import Order, Topic, Response, Photo, Message, Tag
-from .forms import PhotoForm
+from .forms import PhotoForm, InviteForm
 from PIL import Image
 
 
@@ -13,7 +14,8 @@ class OrderTest(TestCase):
     def setUp(self):
         admin = User.objects.create_user(
             username='admin',
-            password='12345'
+            password='12345',
+            is_photographer=True
         )
         photographer = User.objects.create_user(
             username='user',
@@ -125,6 +127,11 @@ class ProfileTest(TestCase):
             text='bvnnbmnbm',
         )
 
+        self.InviteFormSet = modelformset_factory(User, InviteForm, extra=0)
+        self.form_set = self.InviteFormSet(queryset=User.objects.filter(is_photographer=True)
+                                 .exclude(pk=self.user_1.id)
+                                 .annotate(avg_rate=Avg('response__rate')), form_kwargs={'owner': self.user_1.id})
+
     def test_view_profile(self):
         self.client.login(username='test1', password='test123')
         server_response = self.client.get('/profile/' + str(self.user_1.id) + '/')
@@ -157,6 +164,7 @@ class ProfileTest(TestCase):
     def test_main_views(self):
         server_response = self.client.get('')
         self.assertEqual(server_response.status_code, 200)
+        self.assertTemplateUsed('main.html')
 
     def test_message_view(self):
         self.client.login(username='test1', password='test123')
@@ -165,7 +173,7 @@ class ProfileTest(TestCase):
             receiver=self.user_2,
             text='sdfsd'
         )
-        server_response = self.client.get('/message/' + str(message.id) + '/')
+        server_response = self.client.get('/message/' + str(message.receiver.id) + '/')
         self.assertEqual(server_response.status_code, 200)
 
     def test_photo_view(self):
@@ -179,5 +187,5 @@ class ProfileTest(TestCase):
         self.client.login(username='test1', password='test123')
         server_response = self.client.get('/photographers/')
         self.assertEqual(server_response.status_code, 200)
-        for user in User.objects.filter(is_photographer=True):
-            self.assertContains(server_response, user)
+        self.assertTemplateUsed('photographers.html')
+        self.assertTrue(self.form_set in server_response.context['form_set'])

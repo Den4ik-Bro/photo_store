@@ -248,7 +248,6 @@ class DeletePhotoView(generic.DeleteView):
 
 class PhotographersListView(generic.ListView):
     model = User
-    # queryset = User.objects.filter(is_photographer=True)
     context_object_name = 'user'
     template_name = 'photographers.html'
 
