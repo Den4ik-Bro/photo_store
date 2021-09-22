@@ -15,16 +15,16 @@
 <!--        <br>-->
 <!--        <br>-->
 <!--        <br>-->
-    <div>
+    <div style="background-image: url(/static/photo_store/images/logo.jpg); height: 250px; background-size: 100%;">
 <!--            <h1 style="text-align: center; font-size: 50px">Photo store</h1>-->
 <!--        <p class="logo"><img style="z-index: 100;" src="{% static 'photo_store/images/logo_2.jpg' %}" width="50%"></p>-->
             {% if user.is_authenticated %}
-                <a class="menu" style="margin-left: 10px;" href="/">Главная</a>
+                <a class="menu" style="margin-left: 10px; margin-top: 190px;" href="/">Главная</a>
                 <a class="menu" style="margin-left: 240px;" href="{% url 'photo_store:show_profile' pk=request.user.id %}">Профиль</a>
                 <a class="menu" style="margin-left: 250px;" href="{% url 'photo_store:orders' %}">Заказы</a>
                 <a class="menu" style="margin-left: 240px;" href="/logout/">Выход</a>
             {% else %}
-                <a class="menu" href="/">Главная</a>
+                <a class="menu" style="margin-left: 10px; margin-top: 190px;" href="/">Главная</a>
                 <a class="menu" href="/register/">Регистрация</a>
                 <a class="menu" href="/login/">Вход</a>
             {% endif %}
