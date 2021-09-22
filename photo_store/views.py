@@ -11,6 +11,10 @@ from django.contrib.auth import get_user_model, authenticate, login
 from django.forms import modelformset_factory, formset_factory
 from django.views import generic
 from django.core.mail import send_mail
+from .serializers import OrderSerializer
+import json
+from django.core.serializers.json import DjangoJSONEncoder
+
 
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
@@ -883,4 +887,13 @@ class UserCreateView(generic.CreateView):
 
 
 def test_ajax(request):
-    return HttpResponse('мой первый ajax ответ')
+    order = Order.objects.first()
+    # print(model_to_dict(order))
+    # response = json.dumps(model_to_dict(order), cls=DjangoJSONEncoder)
+    serializer = OrderSerializer(order)
+    print(type(serializer.data))
+    print(serializer.data)
+    return HttpResponse(json.dumps(serializer.data))
+
+def create_ajax(request):
+    return HttpResponse('ok')

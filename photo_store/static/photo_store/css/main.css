@@ -1,0 +1,42 @@
+
+.menu {
+   display: inline-block;
+   text-decoration: none;
+   text-transform: uppercase;
+   letter-spacing: 1px;
+   margin: 0px 25px;
+   padding: 15px 20px;
+   font-size: 15px;
+   font-weight: bold;
+   font-family: 'Montserrat', sans-serif;
+   transition: 0.4s ease-in-out;
+}
+.menu {
+   color: white;
+   border-radius: 25px;
+   border: 3px solid white
+}
+.menu:hover {
+   color: #BDB9AB;
+   background: #E7E5DD;
+}
+.menu span {
+   opacity: 0;
+   padding-left: 5px;
+   padding-right: 5px;
+   font-weight: bold;
+   transition: 0.4s ease-in-out;
+}
+.menu:hover span {
+   opacity: 1;
+   padding-left: 10px;
+   padding-right: 10px;
+   color: #BDB9AB;
+}
+
+div {
+    background-image: url(photo_store/images/logo.jpg);
+    height: 200px;
+    width: 100%;
+
+}

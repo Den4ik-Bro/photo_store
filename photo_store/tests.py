@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.db.models import Max, F, Avg
 from .models import Order, Topic, Response, Photo, Message, Tag
-from .forms import PhotoForm, InviteForm
+from .forms import PhotoForm, InviteForm, ResponseForm
 from PIL import Image
 
 
@@ -57,6 +57,15 @@ class OrderTest(TestCase):
         server_response = self.client.get('/orders/')
         self.assertEqual(server_response.status_code, 200)
 
+    def test_order_view(self):
+        self.client.login(username='admin', password='12345')
+        server_response = self.client.get('/order/' + str(self.order.id) + '/')
+        self.assertEqual(server_response.status_code, 200)
+        self.assertTemplateUsed('order_info.html')
+        self.assertTrue(server_response.context['form'], True)
+        self.assertTrue(server_response.context['photo_form'], True)
+        self.assertTrue(server_response.context['rate_response_form'], True)
+
 
 class ProfileTest(TestCase):
     def setUp(self):
@@ -83,7 +92,7 @@ class ProfileTest(TestCase):
 
         topic = Topic.objects.create(name='test')
 
-        order_1 = Order.objects.create(
+        self.order_1 = Order.objects.create(
             topic=topic,
             owner=self.user_1,
             price=1000,
@@ -103,7 +112,7 @@ class ProfileTest(TestCase):
             is_selected=False
         )
 
-        Message.objects.create(
+        self.message = Message.objects.create(
             sender=self.user_1,
             receiver=self.user_2,
             text='sadas',
@@ -142,6 +151,7 @@ class ProfileTest(TestCase):
         self.assertContains(server_response, self.user_1.first_name)
         self.assertContains(server_response, self.user_1.last_name)
         self.assertContains(server_response, self.user_1.email)
+        self.assertContains(server_response, self.message.receiver)
         for order in self.user_1.order_set.all():
             self.assertContains(server_response, order)
         for response in self.user_1.response_set.all():
@@ -168,18 +178,22 @@ class ProfileTest(TestCase):
 
     def test_message_view(self):
         self.client.login(username='test1', password='test123')
-        message = Message.objects.create(
+        self.message = Message.objects.create(
             sender=self.user_1,
             receiver=self.user_2,
             text='sdfsd'
         )
-        server_response = self.client.get('/message/' + str(message.receiver.id) + '/')
+        server_response = self.client.get('/message/' + str(self.message.receiver.id) + '/')
         self.assertEqual(server_response.status_code, 200)
+        self.assertContains(server_response, self.message.sender)
+        self.assertContains(server_response, self.message.receiver)
+        self.assertContains(server_response, self.message.text)
 
     def test_photo_view(self):
         self.client.login(username='test1', password='test123')
         server_response = self.client.get('/photo_view/' + str(self.photo.id) + '/')
         self.assertEqual(server_response.status_code, 200)
+        self.assertContains(server_response, self.photo.description)
         for tag in self.photo.tags.all():
             self.assertContains(server_response, tag.name)
 
@@ -188,4 +202,5 @@ class ProfileTest(TestCase):
         server_response = self.client.get('/photographers/')
         self.assertEqual(server_response.status_code, 200)
         self.assertTemplateUsed('photographers.html')
-        self.assertTrue(self.form_set in server_response.context['form_set'])
+        # self.assertTrue(self.form_set in server_response.context['form_set'])
+
