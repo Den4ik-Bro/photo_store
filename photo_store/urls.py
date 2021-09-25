@@ -42,7 +42,9 @@ urlpatterns = [
     path('del_photo/<int:pk>/', views.DeletePhotoView.as_view(), name='del_photo'),
     path('del_order/<int:pk>/', views.DeleteOrderView.as_view(), name='del_order'),
     path('edit_order/<int:pk>/', views.EditOrderUpdateView.as_view(), name='edit_order'),
+
     path('test_ajax/', views.test_ajax),
-    path('test_create_ajax/', views.create_ajax, name='create_order_ajax')
+    path('test_create_ajax/', views.create_ajax, name='create_order_ajax'),
+    path('test_create_response_ajax/<int:order_id>/', views.create_response_ajax, name='create_response_ajax')
 ]
 

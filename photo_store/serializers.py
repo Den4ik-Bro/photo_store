@@ -13,7 +13,10 @@ from .models import Order, User, Response
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    owner = serializers.PrimaryKeyRelatedField(required=False, queryset=User.objects.all())
+    owner = serializers.PrimaryKeyRelatedField(
+        required=False,
+        queryset=User.objects.all()
+    )
 
     class Meta:
         model = Order
@@ -22,11 +25,16 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class ResponseSerializer(serializers.ModelSerializer):
-    photographer = serializers.PrimaryKeyRelatedField(required=False, queryset=User.objects.all())
-    order = serializers.PrimaryKeyRelatedField(required=False, queryset=Order.objects.all())
+    photographer = serializers.PrimaryKeyRelatedField(
+        required=False,
+        queryset=User.objects.all()
+    )
+    order = serializers.PrimaryKeyRelatedField(
+        required=False,
+        queryset=Order.objects.all()
+    )
 
     class Meta:
         model = Response
-        fields = (
-            'text',
-        )
+        fields = '__all__'
+        read_only_fields = ('datetime',)

@@ -102,7 +102,7 @@ class Topic(models.Model):
 class Response(models.Model):
     text = models.TextField(verbose_name='текст_отклика')
     datetime = models.DateTimeField(verbose_name='дата', default=datetime.datetime.now)
-    is_selected = models.BooleanField()
+    is_selected = models.BooleanField(blank=True, null=True)
     rate = models.PositiveSmallIntegerField\
         (
             default=0,

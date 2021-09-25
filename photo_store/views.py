@@ -12,7 +12,7 @@ from django.contrib.auth import get_user_model, authenticate, login
 from django.forms import modelformset_factory, formset_factory
 from django.views import generic
 from django.core.mail import send_mail
-from .serializers import OrderSerializer
+from .serializers import OrderSerializer, ResponseSerializer
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 
@@ -512,6 +512,7 @@ class GetOrderDetailView(generic.DetailView):
         is_user_has_response = order.response_set.filter(photographer=self.request.user).exists()
         accepted_response = order.response_set.filter(is_selected=True).first()
         context['form'] = form
+        context['ajax_form'] = ResponseForm()
         context['photo_form'] = photo_form
         context['rate_response_form'] = rate_response_form
         context['is_user_has_response'] = is_user_has_response
@@ -888,6 +889,9 @@ class UserCreateView(generic.CreateView):
 #     })
 
 
+"""Тестовые функции для DRF"""
+
+
 def test_ajax(request):
     order = Order.objects.first()
     # print(model_to_dict(order))
@@ -913,6 +917,23 @@ def create_ajax(request):
         #     date_time=datetime.datetime.now(),
         #     owner=request.user,
         #     topic=Topic.objects.get(pk=1)
+        # )
+    else:
+        print(serializer.errors)
+    return HttpResponse('ok')
+
+
+def create_response_ajax(request, order_id):
+    serializer = ResponseSerializer(data=json.loads(request.body))
+    # print(serializer)
+    if serializer.is_valid():
+        serializer.save(photographer=request.user, order=Order.objects.get(pk=order_id))
+        # Response.objects.create(
+        #     text=serializer.validated_data['text'],
+        #     # date_time=datetime.datetime.now(),
+        #     is_selected=False,
+        #     photographer=request.user,
+        #     order=Order.objects.get(pk=45)
         # )
     else:
         print(serializer.errors)
