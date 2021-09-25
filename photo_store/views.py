@@ -1,3 +1,4 @@
+import datetime
 from itertools import chain
 from django.shortcuts import render, redirect, reverse
 from django.http import HttpResponse
@@ -435,6 +436,7 @@ class OrderListView(generic.ListView):
         context = super().get_context_data(object_list=object_list, **kwargs)
         OrderFormSet = modelformset_factory(Order, exclude=('date_time', 'owner'), extra=3)
         context['formset'] = OrderFormSet(queryset=Order.objects.none())
+        context['ajax_form'] = OrderForm()
         return context
 
 
@@ -895,5 +897,23 @@ def test_ajax(request):
     print(serializer.data)
     return HttpResponse(json.dumps(serializer.data))
 
+
 def create_ajax(request):
+    # if request.is_ajax():
+    # order_data = json.loads(request.body)
+    # print(order_data, type(order_data))
+    serializer = OrderSerializer(data=json.loads(request.body))
+    if serializer.is_valid():
+        serializer.save(owner=request.user)
+        # Order.objects.create(
+        #     text=serializer.validated_data['text'],
+        #     price=serializer.validated_data['price'],
+        #     start_date=serializer.validated_data['start_date'],
+        #     finish_date=serializer.validated_data['finish_date'],
+        #     date_time=datetime.datetime.now(),
+        #     owner=request.user,
+        #     topic=Topic.objects.get(pk=1)
+        # )
+    else:
+        print(serializer.errors)
     return HttpResponse('ok')
