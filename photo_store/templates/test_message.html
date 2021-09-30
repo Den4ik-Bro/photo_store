@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %} test {% endblock %}
+
+{% block content %}
+
+<h2>Сообщения</h2>
+{% if user.id == request.user.id %}
+    {% for conversationer, message in message_dict.items %}
+        <p>{{ conversationer }}</p>
+        <p>{{ message.0.text|safe }}</p>
+<!--        <p>{{ message.date_time }}</p>-->
+<!--        <p>Кто: {{ message.sender }}</p>-->
+<!--        <p>Текст: {{ message.text }}</p>-->
+        <a href="{% url 'photo_store:show_messages' pk=conversationer.id %}">
+            <p><input type="button" value="ответить"></p>
+        </a>
+<!--        <p>Кому: {{ message.receiver }}</p>-->
+    <hr>
+    {% endfor %}
+{% else %}
+    <form action="." method="POST">
+        {% csrf_token %}
+        <h2>Написать сообщение</h2>
+        {{ message_form.as_p }}
+        <input type="submit" value="Отправить">
+    </form>
+{% endif %}
+
+{% endblock %}

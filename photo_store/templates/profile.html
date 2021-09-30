@@ -45,7 +45,7 @@
     </form>
 {% endif %}
 
-<h2>Сообщения</h2>
+<h2>Сообщения</h2> <a href="{% url 'photo_store:test_message' pk=request.user.id %}">Test_message</a>
 {% if user.id == request.user.id %}
     {% for conversationer, message in message_dict.items %}
         <p>{{ conversationer }}</p>

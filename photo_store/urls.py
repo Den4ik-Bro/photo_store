@@ -43,8 +43,14 @@ urlpatterns = [
     path('del_order/<int:pk>/', views.DeleteOrderView.as_view(), name='del_order'),
     path('edit_order/<int:pk>/', views.EditOrderUpdateView.as_view(), name='edit_order'),
 
+    path('test_message/<int:pk>/', views.TestMessage.as_view(), name='test_message'),
+
     path('test_ajax/', views.test_ajax),
     path('test_create_ajax/', views.create_ajax, name='create_order_ajax'),
-    path('test_create_response_ajax/<int:order_id>/', views.create_response_ajax, name='create_response_ajax')
+    path('test_create_response_ajax/<int:order_id>/', views.create_response_ajax, name='create_response_ajax'),
+    path('test_create_message_ajax/<int:pk>/', views.create_message_ajax, name='create_message_ajax'),
+    path('test_show_message_ajax/<int:pk>/', views.show_message_ajax, name='show_message_ajax'),
+    path('test_show_order_ajax/<int:pk>/', views.show_order_ajax, name='show_order_ajax'),
+    path('create_order_api/', views.create_order_api, name='create_order_api')
 ]
 

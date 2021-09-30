@@ -32,4 +32,75 @@
     <p><input type="submit" value="Ответить"></p>
 </form>
 
+    <form id="create_form" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+    </form>
+    <a href='#' id="test-link">Тест</a>
+    <p id="answer"></p>
+    <a href='#' id="create-link">TestCreate</a>
+    <script>
+        function getCookie(name)
+        {
+              let matches = document.cookie.match(new RegExp(
+                "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+              ));
+              return matches ? decodeURIComponent(matches[1]) : undefined;
+        }
+
+        let link = document.getElementById('test-link');
+
+        link.addEventListener('click', function()
+        {
+            let sender = new XMLHttpRequest();
+            sender.open('GET', '/test_ajax/', true);
+            sender.send();
+            sender.onreadystatechange = function()
+                {
+                    if(sender.readyState != 4)
+                    {
+                       return;
+                    }
+                    if(sender.status != 200)
+                    {
+                        alert(sender.status, ': ', sender.statusText);
+                    }
+                    let answer_block = document.getElementById('answer');
+                    let order = JSON.parse(sender.responseText);
+                    console.log(order);
+                    answer_block.textContent = order.text;
+                }
+        });
+
+        let create_link = document.getElementById('create-link');
+
+        create_link.addEventListener('click', function()
+        {
+            let sender = new XMLHttpRequest();
+            sender.open('POST', '/test_create_message_ajax/{{ conversation_id.id }}/', true);
+            sender.setRequestHeader('X-CSRFToken', getCookie('csrftoken'))
+            sender.setRequestHeader('Content-Type', 'application/json')
+            let form = document.getElementById('create_form');
+            let message_data = {};
+            for(field of form)
+            {
+                message_data[field.name] = field.value
+            }
+            let json_data = JSON.stringify(message_data);
+            sender.send(json_data);
+            sender.onreadystatechange = function()
+                {
+                     if(sender.readyState != 4)
+                    {
+                       return;
+                    }
+                    if(sender.status != 200)
+                    {
+                        alert(sender.status, ': ', sender.statusText);
+                    }
+
+                    console.log(sender.responseText);
+                }
+        });
+    </script>
 {% endblock %}

@@ -2,13 +2,11 @@
 {% block title %} Регистрация {% endblock %}
 
 {% block content %}
-<form action="/create_user/" method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="Зарегистрироваться">
-</form>
 
-
-
+    <form action="/create_user/" method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Зарегистрироваться">
+    </form>
 
 {% endblock %}

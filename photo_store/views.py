@@ -12,9 +12,12 @@ from django.contrib.auth import get_user_model, authenticate, login
 from django.forms import modelformset_factory, formset_factory
 from django.views import generic
 from django.core.mail import send_mail
-from .serializers import OrderSerializer, ResponseSerializer
+from .serializers import OrderSerializer, ResponseSerializer, MessageSerializer, ShowMessageSerializer, \
+    ExtendOrderSerializer
 import json
 from django.core.serializers.json import DjangoJSONEncoder
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 
 from django.contrib.auth.models import Permission
@@ -44,6 +47,39 @@ class MainView(generic.TemplateView):
 def profile_login(request):
     """редирект на profile/<int:user_id>/"""
     return redirect(reverse('photo_store:show_profile', kwargs={'pk': request.user.id}))
+
+
+class TestMessage(generic.DetailView):
+    model = User
+    template_name = 'test_message.html'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        context['photo_form'] = PhotoForm()
+        context['message_form'] = SendMessageForm()
+        # message_list = Message.objects.select_related('sender', 'receiver')\
+        # .filter(Q(receiver=self.request.user) | Q(sender=self.request.user))
+        get_message = Message.objects.select_related('sender', 'receiver').filter(receiver=self.request.user)
+        message_dict = {}
+        for i in get_message:   # получаем список сообщения каждого отправителя
+            user_receiver_list = Message.objects.select_related('sender', 'receiver')\
+                .filter(sender=i.sender, receiver=self.request.user)
+
+            user_sender_list = Message.objects.select_related('sender', 'receiver')\
+                .filter(sender=self.request.user, receiver=i.sender)
+            message_list = sorted(chain(user_receiver_list, user_sender_list),
+                                  key=lambda instance: instance.date_time,
+                                  reverse=True)
+            print(message_list)
+            print('STOP')
+            """
+            message_list - список всех сообщений где request.user получатель и отправитель с тем с кем переписывается
+            """
+            message_dict[i.sender] = message_list  # и добовляем этот скписок в словарь по ключу, где ключ это имя собеседника
+            # for j in user_receiver_list:
+            #     message_dict[i.sender].append(j)
+        context['message_dict'] = message_dict
+        return context
 
 
 class ProfileDetailView(generic.DetailView):
@@ -938,3 +974,37 @@ def create_response_ajax(request, order_id):
     else:
         print(serializer.errors)
     return HttpResponse('ok')
+
+
+def create_message_ajax(request, pk):
+    serializer = MessageSerializer(data=json.loads(request.body))
+    if serializer.is_valid():
+        serializer.save(sender=request.user, receiver=User.objects.get(pk=pk))
+    else:
+        print(serializer.errors)
+    return HttpResponse(json.dumps(serializer.data))
+
+
+@api_view(['GET'])
+def show_message_ajax(request, pk):
+    message = Message.objects.get(pk=pk)
+    serialiazer = ShowMessageSerializer(message)
+    return Response(serialiazer.data)
+
+
+@api_view(['GET'])
+def show_order_ajax(request, pk):
+    order = Order.objects.get(pk=pk)
+    serializer = ExtendOrderSerializer(order)
+    return Response(serializer.data)
+
+
+@api_view(['POST'])
+def create_order_api(request):
+    if request.method == 'POST':
+        serializer = ExtendOrderSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors)
