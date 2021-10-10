@@ -31,6 +31,7 @@ class OrderForm(forms.ModelForm):
                 'date_time',
                 'owner'
             ]
+        widgets = {'topic': forms.TextInput}
 
 
 class ResponseForm(forms.ModelForm):

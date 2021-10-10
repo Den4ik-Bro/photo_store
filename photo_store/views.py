@@ -1,7 +1,7 @@
 import datetime
 from itertools import chain
 from django.shortcuts import render, redirect, reverse
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.contrib.auth.models import User, Group
 from .models import Photo, Message, Order, Topic, Response, Tag
 from django.db.models import Q, Prefetch, Avg, Count
@@ -13,11 +13,14 @@ from django.forms import modelformset_factory, formset_factory
 from django.views import generic
 from django.core.mail import send_mail
 from .serializers import OrderSerializer, ResponseSerializer, MessageSerializer, ShowMessageSerializer, \
-    ExtendOrderSerializer
+    ExtendOrderSerializer, MessageCreateSerializer, PhotoSerializer, UserSerializer
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from rest_framework.decorators import api_view
-from rest_framework.response import Response
+from rest_framework.response import Response as RestResponse
+from rest_framework.views import APIView
+from rest_framework import status
+from rest_framework import generics, mixins, viewsets
 
 
 from django.contrib.auth.models import Permission
@@ -989,22 +992,173 @@ def create_message_ajax(request, pk):
 def show_message_ajax(request, pk):
     message = Message.objects.get(pk=pk)
     serialiazer = ShowMessageSerializer(message)
-    return Response(serialiazer.data)
+    return RestResponse(serialiazer.data)
+
+
+@api_view(['POST'])
+def create_message_api(request):
+    if request.method == 'POST':
+        serializer = MessageCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return RestResponse(serializer.data)
+        else:
+            return RestResponse(serializer.errors)
 
 
 @api_view(['GET'])
 def show_order_ajax(request, pk):
     order = Order.objects.get(pk=pk)
     serializer = ExtendOrderSerializer(order)
-    return Response(serializer.data)
+    return RestResponse(serializer.data)
+
+
+@api_view(['GET'])
+def show_order_ist_api(request):
+    order = Order.objects.all()
+    serializer = ExtendOrderSerializer(order, many=True)
+    return RestResponse(serializer.data)
+
+
+@api_view(['POST', 'PUT'])
+def create_or_update_order_api(request, pk=None):
+    if request.method == 'POST' or request.method == 'PUT':
+        if pk:
+            order = Order.objects.get(pk=pk)
+            serializer = ExtendOrderSerializer(data=request.data, instance=order)
+        else:
+            serializer = ExtendOrderSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return RestResponse(serializer.data)
+        else:
+            return RestResponse(serializer.errors)
+
+
+@api_view(['GET'])
+def show_photo_ajax(request, pk):
+    photo = Photo.objects.get(pk=pk)
+    serializer = PhotoSerializer(photo)
+    return RestResponse(serializer.data)
 
 
 @api_view(['POST'])
-def create_order_api(request):
+def create_photo_api(request, pk):
     if request.method == 'POST':
-        serializer = ExtendOrderSerializer(data=request.data)
+        serializer = PhotoSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
-        else:
-            return Response(serializer.errors)
+            return RestResponse(serializer.data)
+        return RestResponse(serializer.errors)
+
+
+# class ApiOrderListView(APIView):
+#
+#     def get(self, request):
+#         orders = Order.objects.all()
+#         serializer = ExtendOrderSerializer(orders, many=True)
+#         return RestResponse(serializer.data)
+#
+#     def post(self, request):
+#         serializer = ExtendOrderSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return RestResponse(serializer.data, status=status.HTTP_201_CREATED)
+#         return RestResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#
+#
+# class ApiOrderDetailView(APIView):
+#
+#     def get_object(self, pk):
+#         try:
+#             order = Order.objects.get(pk=pk)
+#         except Order.DoesNotExist:
+#             raise Http404
+#         return order
+#
+#     def get(self, request, pk):
+#         order = self.get_object(pk)
+#         serializer = ExtendOrderSerializer(order)
+#         return RestResponse(serializer.data)
+#
+#     def put(self, request, pk):
+#         order = self.get_object(pk)
+#         serializer = ExtendOrderSerializer(order, data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return RestResponse(serializer.data)
+#         return RestResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#
+#     def delete(self, request, pk):
+#         order = self.get_object(pk)
+#         order.delete()
+#         return RestResponse(status=status.HTTP_204_NO_CONTENT)
+
+
+# class ApiListUpdateOrderView(mixins.ListModelMixin, mixins.UpdateModelMixin, generics.GenericAPIView):
+#     queryset = Order.objects.all()
+#     serializer_class = ExtendOrderSerializer
+#
+#     def get(self, request, *args, **kwargs):
+#         return self.list(request, *args, **kwargs)
+#
+#     def put(self, request, pk, *args, **kwargs):
+#         return self.update(request, pk, *args, **kwargs)
+
+
+# class ApiListUpdateOrderView(generics.RetrieveUpdateDestroyAPIView):
+#     pass
+
+
+# class OrderViewSet(viewsets.ViewSet):
+#
+#     def list(self, request):
+#         orders = Order.objects.all()
+#         serializer = ExtendOrderSerializer(orders, many=True)
+#         return RestResponse(serializer.data)
+#
+#     def retrieve(self, request, pk):
+#         order = Order.objects.get(pk=pk)
+#         serializer = ExtendOrderSerializer(order)
+#         return RestResponse(serializer.data)
+#
+#     def destroy(self, request, pk):
+#         Order.objects.get(pk=pk).delete()
+#         return RestResponse(status=status.HTTP_204_NO_CONTENT)
+#
+#     def update(self, request, pk):
+#         order = Order.objects.get(pk=pk)
+#         serializer = ExtendOrderSerializer(data=request.data, instance=order)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return RestResponse(serializer.data, status=status.HTTP_200_OK)
+#         return RestResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#
+#     def partial_update(self, request, pk):
+#         order = Order.objects.get(pk=pk)
+#         serializer = ExtendOrderSerializer(data=request.data, instance=order, partial=True)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return RestResponse(serializer.data, status=status.HTTP_200_OK)
+#         return RestResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#
+#     def create(self, request):
+#         serializer = ExtendOrderSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return RestResponse(serializer.data, status=status.HTTP_201_CREATED)
+#         return RestResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# order_list_view = OrderViewSet.as_view({'GET': 'list'})
+# order_detail_view = OrderViewSet.as_view({'GET':'retrieve'})
+
+
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = ExtendOrderSerializer
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer

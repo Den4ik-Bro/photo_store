@@ -1,5 +1,10 @@
 from django.urls import path, include
 from . import views
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register('orders', viewset=views.OrderViewSet, basename='order')
+router.register('users', viewset=views.UserViewSet, basename='user')
 
 app_name = 'photo_store'
 
@@ -50,7 +55,17 @@ urlpatterns = [
     path('test_create_response_ajax/<int:order_id>/', views.create_response_ajax, name='create_response_ajax'),
     path('test_create_message_ajax/<int:pk>/', views.create_message_ajax, name='create_message_ajax'),
     path('test_show_message_ajax/<int:pk>/', views.show_message_ajax, name='show_message_ajax'),
-    path('test_show_order_ajax/<int:pk>/', views.show_order_ajax, name='show_order_ajax'),
-    path('create_order_api/', views.create_order_api, name='create_order_api')
+    path('show_order_api/<int:pk>/', views.show_order_ajax, name='show_order_ajax'),
+    path('create_order_api/', views.create_or_update_order_api, name='create_order_api'),
+    path('update_order_api/<int:pk>', views.create_or_update_order_api, name='create_or_update_order_api'),
+    path('order_list_api/', views.show_order_ist_api),
+    path('create_message_api/', views.create_message_api, name='create_message_api'),
+    path('show_photo_api/<int:pk>/', views.show_photo_ajax, name='show_photo_api'),
+    path('create_photo_api/', views.create_photo_api, name='create_photo_api'),
+    # path('api/orders/', views.ApiOrderListView.as_view(), name='api_orders'),
+    # path('api/orders/<int:pk>/', views.ApiOrderDetailView.as_view(), name='api_order')
+    # path('api/orders/<int:pk>/', views.ApiListUpdateOrderView.as_view(), name='api_list_update_order'),
+    # path('api/orders/', views.ApiListUpdateOrderView.as_view(), name='api_list_order'),
+    path('api/', include(router.urls))
 ]
 
