@@ -39,7 +39,7 @@ class ResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Response
-        fields = '__all__'
+        fields = ('text', 'order', 'photographer')
         read_only_fields = ('datetime',)
 
 

@@ -139,9 +139,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 LOGIN_REDIRECT_URL = '/profile/'  # '/profile/<int:user_id>/'
 LOGOUT_REDIRECT_URL = '/login/'
 AUTH_USER_MODEL = 'photo_store.User'
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -159,4 +161,8 @@ LOGGING = {
             'propagate': True,
         },
     },
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }

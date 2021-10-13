@@ -1,5 +1,6 @@
 import datetime
 from itertools import chain
+import django_filters
 from django.shortcuts import render, redirect, reverse
 from django.http import HttpResponse, Http404
 from django.contrib.auth.models import User, Group
@@ -16,12 +17,12 @@ from .serializers import OrderSerializer, ResponseSerializer, MessageSerializer,
     ExtendOrderSerializer, MessageCreateSerializer, PhotoSerializer, UserSerializer
 import json
 from django.core.serializers.json import DjangoJSONEncoder
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action
 from rest_framework.response import Response as RestResponse
 from rest_framework.views import APIView
-from rest_framework import status
+from rest_framework import status, filters
 from rest_framework import generics, mixins, viewsets
-
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, IsAuthenticatedOrReadOnly
 
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
@@ -707,7 +708,6 @@ class CreateResponsePhoto(generic.CreateView):
 
 
 class SelectResponseView(generic.UpdateView):
-    """аналог функции select_response"""
     model = Response
     # queryset = Response.objects.all()
     template_name = 'order_info.html'
@@ -1157,8 +1157,38 @@ def create_photo_api(request, pk):
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = ExtendOrderSerializer
+    filter_backends = [django_filters.rest_framework.DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['topic__name',]
 
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    filter_backends = [django_filters.rest_framework.DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['username', 'email']
+
+
+class MessageViewSet(viewsets.ModelViewSet):
+    queryset = Message.objects.all()
+    serializer_class = ShowMessageSerializer
+
+
+class ResponseViewSet(viewsets.ModelViewSet):
+    queryset = Response.objects.all()
+    serializer_class = ResponseSerializer
+    permission_classes = [IsAuthenticated]
+
+    @action(detail=True, methods=['GET'])
+    def select_for_order(self, request, pk):
+        # if request.user.has_perm()
+        response = self.get_object()
+        if response.order.response_set.filter(is_selected=True).exists():
+            return RestResponse({'status': 'for this order response already selected'}, status=status.HTTP_400_BAD_REQUEST)
+        response.is_selected = True
+        response.save()
+        return RestResponse({'status': 'response selected'})
+
+
+class PhotoViewSet(viewsets.ModelViewSet):
+    queryset = Photo.objects.filter(response=None)
+    serializer_class = PhotoSerializer

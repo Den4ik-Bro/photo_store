@@ -5,6 +5,9 @@ from rest_framework.routers import DefaultRouter
 router = DefaultRouter()
 router.register('orders', viewset=views.OrderViewSet, basename='order')
 router.register('users', viewset=views.UserViewSet, basename='user')
+router.register('messages', viewset=views.MessageViewSet, basename='message')
+router.register('responses', viewset=views.ResponseViewSet, basename='response')
+router.register('photos', viewset=views.PhotoViewSet, basename='photo')
 
 app_name = 'photo_store'
 
