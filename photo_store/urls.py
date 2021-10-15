@@ -8,6 +8,7 @@ router.register('users', viewset=views.UserViewSet, basename='user')
 router.register('messages', viewset=views.MessageViewSet, basename='message')
 router.register('responses', viewset=views.ResponseViewSet, basename='response')
 router.register('photos', viewset=views.PhotoViewSet, basename='photo')
+router.register('topics', viewset=views.TopicViewSet, basename='topic')
 
 app_name = 'photo_store'
 
@@ -69,6 +70,7 @@ urlpatterns = [
     # path('api/orders/<int:pk>/', views.ApiOrderDetailView.as_view(), name='api_order')
     # path('api/orders/<int:pk>/', views.ApiListUpdateOrderView.as_view(), name='api_list_update_order'),
     # path('api/orders/', views.ApiListUpdateOrderView.as_view(), name='api_list_order'),
-    path('api/', include(router.urls))
+    path('api/', include(router.urls)),
+
 ]
 

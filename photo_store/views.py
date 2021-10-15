@@ -14,7 +14,7 @@ from django.forms import modelformset_factory, formset_factory
 from django.views import generic
 from django.core.mail import send_mail
 from .serializers import OrderSerializer, ResponseSerializer, MessageSerializer, ShowMessageSerializer, \
-    ExtendOrderSerializer, MessageCreateSerializer, PhotoSerializer, UserSerializer
+    ExtendOrderSerializer, MessageCreateSerializer, PhotoSerializer, UserSerializer, TopicSerializer
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from rest_framework.decorators import api_view, action
@@ -23,6 +23,7 @@ from rest_framework.views import APIView
 from rest_framework import status, filters
 from rest_framework import generics, mixins, viewsets
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, IsAuthenticatedOrReadOnly
+from .permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
 
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
@@ -1159,6 +1160,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = ExtendOrderSerializer
     filter_backends = [django_filters.rest_framework.DjangoFilterBackend, filters.SearchFilter]
     search_fields = ['topic__name',]
+    permission_classes = [IsOwnerOrReadOnly]
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -1176,7 +1178,7 @@ class MessageViewSet(viewsets.ModelViewSet):
 class ResponseViewSet(viewsets.ModelViewSet):
     queryset = Response.objects.all()
     serializer_class = ResponseSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
     @action(detail=True, methods=['GET'])
     def select_for_order(self, request, pk):
@@ -1187,6 +1189,12 @@ class ResponseViewSet(viewsets.ModelViewSet):
         response.is_selected = True
         response.save()
         return RestResponse({'status': 'response selected'})
+
+
+class TopicViewSet(viewsets.ModelViewSet):
+    queryset = Topic.objects.all()
+    serializer_class = TopicSerializer
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class PhotoViewSet(viewsets.ModelViewSet):
