@@ -124,7 +124,7 @@ EMAIL_PORT = '25'
 EMAIL_HOST_USER = 'test@arpix.pro'
 EMAIL_HOST_PASSWORD = 'qwe1245!!'
 # EMAIL_USE_TLS = True
-# EMAIL_USE_SSL = True
+EMAIL_USE_SSL = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/

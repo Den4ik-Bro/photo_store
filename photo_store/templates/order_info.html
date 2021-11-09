@@ -3,9 +3,10 @@
 {% block title %} Заказ №{{current_order.id}} {% endblock %}
 
 {% block content %}
-    <h1>{{current_order.topic.name}}</h1>
-    <p>Описание: {{current_order.text}}</p>
-    <p>Цена: {{current_order.price}}</p>
+    <h1>{{ current_order.topic.name }}</h1>
+    <p>Клиент: <a href="{% url 'photo_store:show_profile' pk=current_order.owner.id %}">{{ current_order.owner.username }}</a></p>
+    <p>Описание: {{ current_order.text }}</p>
+    <p>Цена: {{ current_order.price }}</p>
     {% if not is_user_has_response and current_order.owner != user and not accepted_response and user|has_group:"Photographers"%}
         <form action="{% url 'photo_store:create_response' pk=current_order.id %}" method="POST">
             {% csrf_token %}

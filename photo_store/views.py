@@ -661,12 +661,13 @@ class CreateResponse(generic.CreateView):
             Message.objects.create(text=response.text,   # сообщение заказчику от исполнителя
                                    sender=response.photographer,
                                    receiver=order.owner)
-            send_mail(
-                'Photo_Store: информация по заказу ' + str(order),
-                'На ваш заказ откликнулся ' + str(response.photographer),
-                'admin@photo_store.ru',
-                [order.owner.email]
-            )
+            # временно отключил отправку почты
+            # send_mail(
+            #     'Photo_Store: информация по заказу ' + str(order),
+            #     'На ваш заказ откликнулся ' + str(response.photographer),
+            #     'admin@photo_store.ru',
+            #     [order.owner.email]
+            # )
             # return redirect(reverse('photo_store:order', kwargs={'pk': order.id}))
         return redirect(reverse('photo_store:order', kwargs={'pk': order.id}))
 
@@ -1161,6 +1162,13 @@ class OrderViewSet(viewsets.ModelViewSet):
     filter_backends = [django_filters.rest_framework.DjangoFilterBackend, filters.SearchFilter]
     search_fields = ['topic__name',]
     permission_classes = [IsOwnerOrReadOnly]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save(owner=request.user)
+            return RestResponse(serializer.data)
+        return RestResponse(serializer.errors)
 
 
 class UserViewSet(viewsets.ModelViewSet):

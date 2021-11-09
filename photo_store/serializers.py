@@ -96,10 +96,13 @@ class TopicSerializer(serializers.ModelSerializer):
 
 class ExtendOrderSerializer(serializers.ModelSerializer):
     topic = TopicSerializer()
+    owner = UserSerializer()
 
     class Meta:
         model = Order
+        # exclude = ('owner',)
         fields = '__all__'
+        read_only_fields = ('owner',)
 
     def create(self, validated_data):
         print('before', validated_data)
