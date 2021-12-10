@@ -98,6 +98,18 @@ class TagForm(forms.ModelForm):
         model = Tag
         fields = ['name']
 
+    def save(self, commit=True):
+        tag, created = Tag.objects.get_or_create(name=self.cleaned_data['name'])
+        return tag
+
+    # def is_valid(self):
+    #     self.cleaned_data = {'name':}
+    #     return True
+
+
+class TagForm_test(forms.Form):
+    name = forms.CharField()
+
 
 class InviteForm(forms.ModelForm):
     orders = forms.ModelChoiceField(queryset=None, label='заказ', required=False)

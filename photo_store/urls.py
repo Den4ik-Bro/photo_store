@@ -10,6 +10,7 @@ router.register('responses', viewset=views.ResponseViewSet, basename='response')
 router.register('photos', viewset=views.PhotoViewSet, basename='photo')
 router.register('topics', viewset=views.TopicViewSet, basename='topic')
 
+
 app_name = 'photo_store'
 
 urlpatterns = [
@@ -66,6 +67,8 @@ urlpatterns = [
     path('create_message_api/', views.create_message_api, name='create_message_api'),
     path('show_photo_api/<int:pk>/', views.show_photo_ajax, name='show_photo_api'),
     path('create_photo_api/', views.create_photo_api, name='create_photo_api'),
+    path('show_user_photo_api/', views.UserPhotoApiView.as_view(), name='user_photo'),
+    path('show_user_message_api/', views.UserMessageApiView.as_view(), name='user_message'),
     # path('api/orders/', views.ApiOrderListView.as_view(), name='api_orders'),
     # path('api/orders/<int:pk>/', views.ApiOrderDetailView.as_view(), name='api_order')
     # path('api/orders/<int:pk>/', views.ApiListUpdateOrderView.as_view(), name='api_list_update_order'),

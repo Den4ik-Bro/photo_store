@@ -4,9 +4,12 @@
 {% block content %}
 
     <h1 style="text-align: center;">Добро пожаловать на наш проект по поиску фотографов</h1>
-    <p><a href="/login/">Вход</a></p>
-    <p><a href="/register/">Регистрация</a></p>
+    {% if not user.is_authenticated %}
+        <p><a href="/login/">Вход</a></p>
+        <p><a href="/register/">Регистрация</a></p>
+    {% endif %}
     {% if user.is_authenticated %}
+        <p><a href="/logout/">Выход</a></p>
         <p><a href="{% url 'photo_store:photographers' %}">Поиск фотографа</a></p>
     {% endif %}
 

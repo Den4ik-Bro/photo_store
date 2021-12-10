@@ -7,14 +7,15 @@ from django.contrib.auth.models import User, Group
 from .models import Photo, Message, Order, Topic, Response, Tag
 from django.db.models import Q, Prefetch, Avg, Count
 from .forms import ProfileForm, OrderForm, ResponseForm, PhotoForm, SendMessageForm, RegistrationUserForm, TagForm, \
-    RateResponseForm, InviteForm
+    RateResponseForm, InviteForm, TagForm_test
 from django.forms.models import model_to_dict
 from django.contrib.auth import get_user_model, authenticate, login
 from django.forms import modelformset_factory, formset_factory
 from django.views import generic
 from django.core.mail import send_mail
 from .serializers import OrderSerializer, ResponseSerializer, MessageSerializer, ShowMessageSerializer, \
-    ExtendOrderSerializer, MessageCreateSerializer, PhotoSerializer, UserSerializer, TopicSerializer
+    ExtendOrderSerializer, MessageCreateSerializer, PhotoSerializer, UserSerializer, TopicSerializer, \
+    UserPhotoSerializer, ShowUserMessageSerializer
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from rest_framework.decorators import api_view, action
@@ -836,14 +837,18 @@ class PhotoDetailView(generic.DetailView):
 
 class TagCreateView(generic.CreateView):
     model = Tag
-    form_class = TagForm
+    form_class = TagForm_test
     template_name = 'photo_view.html'
 
     def post(self, request, photo_id):
         form = self.form_class(request.POST)
+        photo = Photo.objects.get(pk=photo_id)
         if form.is_valid():
-            tag = form.save()
-            tag.photo_set.add(Photo.objects.get(pk=photo_id))
+            # tag = form.save()
+            tag, created = Tag.objects.get_or_create(name=form.cleaned_data['name'])
+            tag.photo_set.add(photo)
+        else:
+            print(form.errors)
         return redirect(reverse('photo_store:photo_view', kwargs={'pk': photo_id}))
 
 
@@ -1206,5 +1211,30 @@ class TopicViewSet(viewsets.ModelViewSet):
 
 
 class PhotoViewSet(viewsets.ModelViewSet):
-    queryset = Photo.objects.filter(response=None)
+    queryset = Photo.objects.all()
     serializer_class = PhotoSerializer
+
+
+class UserPhotoApiView(APIView):
+
+    def get(self, request):
+        photos = Photo.objects.filter(photographer=request.user, response=None)
+        serializer = UserPhotoSerializer(photos, many=True)
+        return RestResponse(serializer.data)
+
+    def post(self, request):
+        photographer = request.user
+        serializer = UserPhotoSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(photographer=photographer)
+            print(serializer)
+            return RestResponse(serializer.data, status=status.HTTP_201_CREATED)
+        return RestResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserMessageApiView(APIView):
+
+    def get(self, request):
+        messages = Message.objects.filter(Q(sender=request.user) | Q(receiver=request.user))
+        serializer = ShowUserMessageSerializer(messages, many=True)
+        return RestResponse(serializer.data)

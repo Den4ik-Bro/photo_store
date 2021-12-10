@@ -68,10 +68,11 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
+            'id',
             'first_name',
             'last_name',
             'email',
-        )
+        )  # ниже есть второй такой же сериализатор О_о
 
 
 class ShowMessageSerializer(serializers.ModelSerializer):
@@ -139,21 +140,21 @@ class TagSerializer(serializers.ModelSerializer):
         return tag
 
 
-class UserSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = User
-        fields = (
-            'username',
-            'first_name',
-            'last_name',
-            'email',
-        )
+# class UserSerializer(serializers.ModelSerializer):
+#
+#     class Meta:
+#         model = User
+#         fields = (
+#             'username',
+#             'first_name',
+#             'last_name',
+#             'email',
+#         )
 
 
 class PhotoSerializer(serializers.ModelSerializer):
     photographer = UserSerializer(read_only=True)
-    tags = TagSerializer()
+    tags = TagSerializer(read_only=True)
 
     class Meta:
         model = Photo
@@ -172,3 +173,28 @@ class PhotoSerializer(serializers.ModelSerializer):
         instance.tags = validated_data['tags']
         instance.save()
         return instance
+
+
+class UserPhotoSerializer(serializers.ModelSerializer):
+    tags = TagSerializer(read_only=True)
+    photographer = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Photo
+        fields = '__all__'
+
+    # def create(self, validated_data):
+    #     return Photo.objects.create(**validated_data)
+
+    # def save(self, **kwargs):
+    #     photographer = self.validated_data['photographer']
+    #     image = self.validated_data['image']
+
+
+class ShowUserMessageSerializer(serializers.ModelSerializer):
+    sender = UserSerializer(read_only=True)
+    receiver = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Message
+        fields = '__all__'
