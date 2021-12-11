@@ -13,36 +13,25 @@ router.register('topics', viewset=views.TopicViewSet, basename='topic')
 
 app_name = 'photo_store'
 
-urlpatterns = [
-    # path('', views.main, name='index'),
+urlpatterns = [  # site 17-45
     path('', views.MainView.as_view(), name='index'),
-    # path('photographers/', views.photographers, name='photographers'),
     path('photographers/', views.PhotographersListView.as_view(), name='photographers'),
-    # path('invite_to_orders/', views.invite_to_orders, name='invite_to_orders'),
     path('invite_to_orders/', views.InviteToOrders.as_view(), name='invite_to_orders'),
     path('tag_photos/<int:pk>/', views.TagPhotoDetailView.as_view(), name='tag_photos'),
     path('profile/', views.profile_login, name='profile'),
     path('profile/<int:pk>/', include([
         path('', views.ProfileDetailView.as_view(), name='show_profile'),
-        # path('', views.profile, name='show_profile'),
-        # path('edit/', views.edit_profile, name='edit_profile'),
         path('edit/', views.EditProfileView.as_view(), name='edit_profile'),
-
     ])),
-    # path('message/<int:conversationer_id>/', views.view_message, name='show_messages'),
     path('message/<int:pk>/', views.ViewMessage.as_view(), name='show_messages'),
     path('create_message/<int:user_id>/', views.CreateMessage.as_view(), name='create_message'),
-    # path('orders/', views.orders, name='orders'),
     path('orders/', views.OrderListView.as_view(), name='orders'),
     path('create_order/', views.OrderCreateView.as_view(), name='create_order'),
     path('create_photo/', views.PhotoCreateView.as_view(), name='create_photo'),
     path('order/<int:pk>/', include([
         path('', views.GetOrderDetailView.as_view(), name='order')
-        # path('', views.get_order, name='order'),
-        # path('edit/', views.edit_order, name='edit_order'),
     ])),
     path('ok/', views.OkView.as_view(), name='response sent'),
-    # path('select_response/<int:response_id>/', views.select_response, name='select_response'),
     path('select_response/<int:pk>/', views.SelectResponseView.as_view(), name='select_response'),
     path('create_response/<int:pk>', views.CreateResponse.as_view(), name='create_response'),
     path('create_response_photo/<int:pk>', views.CreateResponsePhoto.as_view(), name='create_response_photo'),
@@ -55,6 +44,7 @@ urlpatterns = [
 
     path('test_message/<int:pk>/', views.TestMessage.as_view(), name='test_message'),
 
+  # API 48-...
     path('test_ajax/', views.test_ajax),
     path('test_create_ajax/', views.create_ajax, name='create_order_ajax'),
     path('test_create_response_ajax/<int:order_id>/', views.create_response_ajax, name='create_response_ajax'),

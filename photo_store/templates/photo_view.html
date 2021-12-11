@@ -4,7 +4,9 @@
 {% block content %}
 
         <p><img src="{{photo.image.url}}"></p>
-        <p>{{ photo.description }}</p>
+        {% if photo.description %}
+                <p>{{ photo.description }}</p>
+        {% endif %}
         {% for tag in photo.tags.all %}
                 <a href="{% url 'photo_store:tag_photos' pk=tag.id %}">#{{ tag.name }}</a>
         {% endfor %}
