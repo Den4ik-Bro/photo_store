@@ -628,19 +628,7 @@ def create_photo_api(request, pk):
         return RestResponse(serializer.errors)
 
 
-# class ApiOrderListView(APIView):
-#
-#     def get(self, request):
-#         orders = Order.objects.all()
-#         serializer = ExtendOrderSerializer(orders, many=True)
-#         return RestResponse(serializer.data)
-#
-#     def post(self, request):
-#         serializer = ExtendOrderSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return RestResponse(serializer.data, status=status.HTTP_201_CREATED)
-#         return RestResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 #
 #
 # class ApiOrderDetailView(APIView):
@@ -784,21 +772,50 @@ class PhotoViewSet(viewsets.ModelViewSet):
     serializer_class = PhotoSerializer
 
 
-class UserPhotoApiView(APIView):
+class UserPhotoViewSet(viewsets.ModelViewSet):
+    serializer_class = UserPhotoSerializer
 
-    def get(self, request):
-        photos = Photo.objects.filter(photographer=request.user, response=None)
-        serializer = UserPhotoSerializer(photos, many=True)
+    def get_queryset(self):
+        # return super().get_queryset().filter(photographer=self.request.user)
+        # return self.request.user.photo_set.filter(response=None)
+        pass
+
+    def list(self, request, *args, **kwargs):
+        queryset = Photo.objects.filter(photographer=request.user, response=None)
+        serializer = self.get_serializer(queryset, many=True)
         return RestResponse(serializer.data)
 
-    def post(self, request):
-        photographer = request.user
-        serializer = UserPhotoSerializer(data=request.data)
+    def retrieve(self, request, pk):
+        instance = Photo.objects.get(pk=pk)
+        serializer = self.get_serializer(instance)
+        return RestResponse(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(photographer=photographer)
-            print(serializer)
+            serializer.save(photographer=request.user)
             return RestResponse(serializer.data, status=status.HTTP_201_CREATED)
         return RestResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, pk):
+        Photo.objects.get(pk=pk).delete()
+        return RestResponse(status=status.HTTP_204_NO_CONTENT)
+
+# class UserPhotoApiView(APIView):
+#
+#     def get(self, request):
+#         photos = Photo.objects.filter(photographer=request.user, response=None)
+#         serializer = UserPhotoSerializer(photos, many=True)
+#         return RestResponse(serializer.data)
+#
+#     def post(self, request):
+#         photographer = request.user
+#         serializer = UserPhotoSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save(photographer=photographer)
+#             print(serializer)
+#             return RestResponse(serializer.data, status=status.HTTP_201_CREATED)
+#         return RestResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserMessageApiView(APIView):
@@ -807,3 +824,46 @@ class UserMessageApiView(APIView):
         messages = Message.objects.filter(Q(sender=request.user) | Q(receiver=request.user))
         serializer = ShowUserMessageSerializer(messages, many=True)
         return RestResponse(serializer.data)
+
+
+class UserOrderApiView(APIView):
+
+    def get(self, request):
+        orders = Order.objects.filter(owner=request.user)
+        serializer = ExtendOrderSerializer(orders, many=True)
+        return RestResponse(serializer.data)
+
+    def post(self, request):
+        serializer = ExtendOrderSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(owner=request.user)
+            return RestResponse(serializer.data, status=status.HTTP_201_CREATED)
+        return RestResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserOrderDetailApiView(APIView):
+
+    def get_object(self, pk):
+        try:
+            order = Order.objects.get(pk=pk)
+        except Order.DoesNotExist:
+            raise Http404
+        return order
+
+    def get(self, request, pk):
+        order = self.get_object(pk)
+        serializer = ExtendOrderSerializer(order)
+        return RestResponse(serializer.data)
+
+    def put(self, request, pk):
+        order = self.get_object(pk)
+        serializer = ExtendOrderSerializer(order, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return RestResponse(serializer.data)
+        return RestResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        order = self.get_object(pk)
+        order.delete()
+        return RestResponse(status=status.HTTP_204_NO_CONTENT)
