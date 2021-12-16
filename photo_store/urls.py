@@ -1,20 +1,24 @@
 from django.urls import path, include
 from . import views
 from rest_framework.routers import DefaultRouter
+from rest_framework.authtoken import views as token_views
 
 router = DefaultRouter()
-router.register('orders', viewset=views.OrderViewSet, basename='order')
-router.register('users', viewset=views.UserViewSet, basename='user')
-router.register('messages', viewset=views.MessageViewSet, basename='message')
-router.register('responses', viewset=views.ResponseViewSet, basename='response')
-router.register('photos', viewset=views.PhotoViewSet, basename='photo')
-router.register('topics', viewset=views.TopicViewSet, basename='topic')
-router.register('user_photo', viewset=views.UserPhotoViewSet, basename='user_photo')
+router.register('orders', viewset=views.OrderApiViewSet, basename='orders')
+router.register('users', viewset=views.UserViewSet, basename='users')
+router.register('messages', viewset=views.MessageViewSet, basename='messages')
+router.register('responses', viewset=views.ResponseViewSet, basename='responses')
+router.register('photos', viewset=views.PhotoViewSet, basename='photos')
+router.register('topics', viewset=views.TopicViewSet, basename='topics')
+router.register('user_photos', viewset=views.UserPhotoApiViewSet, basename='user_photos')
+router.register('user_response_photos', viewset=views.UserResponsePhotoApiViewSet, basename='user_response_photos')
+router.register('user_orders', viewset=views.UserOrderApiViewSet, basename='user_orders')
+router.register('user_messages', viewset=views.UserMessagesApiView, basename='user_messages')
 
 
 app_name = 'photo_store'
 
-urlpatterns = [  # site 17-45
+urlpatterns = [
     path('', views.MainView.as_view(), name='index'),
     path('photographers/', views.PhotographersListView.as_view(), name='photographers'),
     path('invite_to_orders/', views.InviteToOrders.as_view(), name='invite_to_orders'),
@@ -44,12 +48,9 @@ urlpatterns = [  # site 17-45
     path('edit_order/<int:pk>/', views.EditOrderUpdateView.as_view(), name='edit_order'),
     # path('test_message/<int:pk>/', views.TestMessage.as_view(), name='test_message'),
 
-  # API 48-...
+  # API...
     path('api/', include([
-    # path('show_user_photo/', views.UserPhotoApiView.as_view(), name='user_photos'),
-    path('show_user_message/', views.UserMessageApiView.as_view(), name='user_messages'),
-    path('show_user_order/', views.UserOrderApiView.as_view(), name='user_orders'),
-    path('show_user_order/<int:pk>/', views.UserOrderDetailApiView.as_view(), name='user_order_detail'),
+        path('api-token-auth/', token_views.obtain_auth_token)
     ])),
     path('api/', include(router.urls)),
   # ниже пока тестовые урлы, пока не удаляю

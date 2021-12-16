@@ -15,7 +15,7 @@ from django.views import generic
 from django.core.mail import send_mail
 from .serializers import OrderSerializer, ResponseSerializer, MessageSerializer, ShowMessageSerializer, \
     ExtendOrderSerializer, MessageCreateSerializer, PhotoSerializer, UserSerializer, TopicSerializer, \
-    UserPhotoSerializer, ShowUserMessageSerializer
+    UserPhotoSerializer, ShowUserMessageSerializer, UserResponsePhotoSerializer
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from rest_framework.decorators import api_view, action
@@ -504,7 +504,7 @@ class UserCreateView(generic.CreateView):
             return redirect('register/')
 
 
-"""Тестовые функции для DRF"""
+"""Функции и классы DRF"""
 
 
 def test_ajax(request):
@@ -718,7 +718,7 @@ def create_photo_api(request, pk):
 # order_detail_view = OrderViewSet.as_view({'GET':'retrieve'})
 
 
-class OrderViewSet(viewsets.ModelViewSet):
+class OrderApiViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = ExtendOrderSerializer
     filter_backends = [django_filters.rest_framework.DjangoFilterBackend, filters.SearchFilter]
@@ -772,23 +772,12 @@ class PhotoViewSet(viewsets.ModelViewSet):
     serializer_class = PhotoSerializer
 
 
-class UserPhotoViewSet(viewsets.ModelViewSet):
+class UserPhotoApiViewSet(viewsets.ModelViewSet):
+    """Портфолио пользователя"""
     serializer_class = UserPhotoSerializer
 
     def get_queryset(self):
-        # return super().get_queryset().filter(photographer=self.request.user)
-        # return self.request.user.photo_set.filter(response=None)
-        pass
-
-    def list(self, request, *args, **kwargs):
-        queryset = Photo.objects.filter(photographer=request.user, response=None)
-        serializer = self.get_serializer(queryset, many=True)
-        return RestResponse(serializer.data)
-
-    def retrieve(self, request, pk):
-        instance = Photo.objects.get(pk=pk)
-        serializer = self.get_serializer(instance)
-        return RestResponse(serializer.data)
+        return self.request.user.photo_set.filter(response=None)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -797,43 +786,25 @@ class UserPhotoViewSet(viewsets.ModelViewSet):
             return RestResponse(serializer.data, status=status.HTTP_201_CREATED)
         return RestResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def destroy(self, request, pk):
-        Photo.objects.get(pk=pk).delete()
-        return RestResponse(status=status.HTTP_204_NO_CONTENT)
 
-# class UserPhotoApiView(APIView):
-#
-#     def get(self, request):
-#         photos = Photo.objects.filter(photographer=request.user, response=None)
-#         serializer = UserPhotoSerializer(photos, many=True)
-#         return RestResponse(serializer.data)
-#
-#     def post(self, request):
-#         photographer = request.user
-#         serializer = UserPhotoSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save(photographer=photographer)
-#             print(serializer)
-#             return RestResponse(serializer.data, status=status.HTTP_201_CREATED)
-#         return RestResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class UserResponsePhotoApiViewSet(viewsets.ModelViewSet):
+    """Все фотографии пользователя к заказам"""
+    serializer_class = UserResponsePhotoSerializer
+
+    def get_queryset(self):
+        return self.request.user.photo_set.filter(response__isnull=False)
+        # user = self.request.user
+        # return user.photo_set.filter(response__photographer=user)
 
 
-class UserMessageApiView(APIView):
+class UserOrderApiViewSet(viewsets.ModelViewSet):
+    """Все заказы псозданные ползователем"""
+    serializer_class = ExtendOrderSerializer
 
-    def get(self, request):
-        messages = Message.objects.filter(Q(sender=request.user) | Q(receiver=request.user))
-        serializer = ShowUserMessageSerializer(messages, many=True)
-        return RestResponse(serializer.data)
+    def get_queryset(self):
+        return Order.objects.filter(owner=self.request.user)
 
-
-class UserOrderApiView(APIView):
-
-    def get(self, request):
-        orders = Order.objects.filter(owner=request.user)
-        serializer = ExtendOrderSerializer(orders, many=True)
-        return RestResponse(serializer.data)
-
-    def post(self, request):
+    def create(self, request, *args, **kwargs):
         serializer = ExtendOrderSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(owner=request.user)
@@ -841,29 +812,12 @@ class UserOrderApiView(APIView):
         return RestResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserOrderDetailApiView(APIView):
+class UserMessagesApiView(mixins.ListModelMixin,
+                          mixins.RetrieveModelMixin,
+                          viewsets.GenericViewSet
+                          ):
+    """Сообщения пользователя, где он либо отправитель, либо получатель"""
+    serializer_class = MessageSerializer
 
-    def get_object(self, pk):
-        try:
-            order = Order.objects.get(pk=pk)
-        except Order.DoesNotExist:
-            raise Http404
-        return order
-
-    def get(self, request, pk):
-        order = self.get_object(pk)
-        serializer = ExtendOrderSerializer(order)
-        return RestResponse(serializer.data)
-
-    def put(self, request, pk):
-        order = self.get_object(pk)
-        serializer = ExtendOrderSerializer(order, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return RestResponse(serializer.data)
-        return RestResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk):
-        order = self.get_object(pk)
-        order.delete()
-        return RestResponse(status=status.HTTP_204_NO_CONTENT)
+    def get_queryset(self):
+        return Message.objects.filter(Q(sender=self.request.user) | Q(receiver=self.request.user))

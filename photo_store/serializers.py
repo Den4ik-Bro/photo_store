@@ -15,6 +15,18 @@ User = get_user_model()
 #     finish_date = serializers.DateField()
 
 
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = (
+            'id',
+            'first_name',
+            'last_name',
+            'email',
+        )  # ниже есть второй такой же сериализатор О_о
+
+
 class OrderSerializer(serializers.ModelSerializer):
     owner = serializers.PrimaryKeyRelatedField(
         required=False,
@@ -44,35 +56,20 @@ class ResponseSerializer(serializers.ModelSerializer):
 
 
 class MessageSerializer(serializers.ModelSerializer):
-    sender = serializers.PrimaryKeyRelatedField(
-        required=False,
-        queryset=User.objects.all()
-    )
-    receiver = serializers.PrimaryKeyRelatedField(
-        required=False,
-        queryset=User.objects.all()
-    )
+    # sender = serializers.PrimaryKeyRelatedField(
+    #     required=False,
+    #     queryset=User.objects.all()
+    # )
+    # receiver = serializers.PrimaryKeyRelatedField(
+    #     required=False,
+    #     queryset=User.objects.all()
+    # )
+    sender = UserSerializer(read_only=True)
+    receiver = UserSerializer(read_only=True)
 
     class Meta:
         model = Message
-        fields = (
-            'sender',
-            'receiver',
-            'text',
-            'date_time'
-        )
-
-
-class UserSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = User
-        fields = (
-            'id',
-            'first_name',
-            'last_name',
-            'email',
-        )  # ниже есть второй такой же сериализатор О_о
+        exclude = ('response',)
 
 
 class ShowMessageSerializer(serializers.ModelSerializer):
@@ -101,7 +98,8 @@ class ExtendOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = '__all__'
+        # fields = '__all__'
+        exclude = ('date_time',)
 
     def create(self, validated_data):
         print('before', validated_data)
@@ -110,7 +108,6 @@ class ExtendOrderSerializer(serializers.ModelSerializer):
         topic_serializer = TopicSerializer(data=topic_data)
         if topic_serializer.is_valid():
             topic = topic_serializer.save()
-
         order = Order.objects.create(**validated_data, topic=topic)
         return order
 
@@ -195,4 +192,13 @@ class ShowUserMessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Message
+        fields = '__all__'
+
+
+class UserResponsePhotoSerializer(serializers.ModelSerializer):
+    response = ResponseSerializer(read_only=True)
+    tags = TagSerializer(read_only=True, required=False)
+
+    class Meta:
+        model = Photo
         fields = '__all__'
