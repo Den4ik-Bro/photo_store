@@ -857,17 +857,3 @@ class UserMessagesApiViewSet(mixins.ListModelMixin,
         return RestResponse({'status': 'message created'})
 
 
-# class UserToUserCorrespondence(mixins.ListModelMixin,
-#                                mixins.CreateModelMixin,
-#                                viewsets.GenericViewSet):
-#     serializer_class = ShowMessageSerializer
-#
-#     def get_queryset(self):
-#         get_message = Message.objects.select_related('sender', 'receiver').filter(receiver=self.request.user)
-#         message_dict = {}
-#         for i in get_message:  # получаем список сообщения каждого отправителя
-#             message_dict[i.sender] = []
-#             s = Message.objects.select_related('sender', 'receiver').filter(sender=i.sender, receiver=self.request.user)
-#             for j in s:
-#                 message_dict[i.sender].append(j)
-#         return
