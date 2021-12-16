@@ -27,60 +27,6 @@ class UserSerializer(serializers.ModelSerializer):
         )  # ниже есть второй такой же сериализатор О_о
 
 
-class OrderSerializer(serializers.ModelSerializer):
-    owner = serializers.PrimaryKeyRelatedField(
-        required=False,
-        queryset=User.objects.all()
-    )
-
-    class Meta:
-        model = Order
-        fields = '__all__'
-        read_only_fields = ('date_time',)
-
-
-class ResponseSerializer(serializers.ModelSerializer):
-    photographer = serializers.PrimaryKeyRelatedField(
-        required=False,
-        queryset=User.objects.all()
-    )
-    order = serializers.PrimaryKeyRelatedField(
-        required=False,
-        queryset=Order.objects.all()
-    )
-
-    class Meta:
-        model = Response
-        fields = ('text', 'order', 'photographer')
-        read_only_fields = ('datetime',)
-
-
-class MessageSerializer(serializers.ModelSerializer):
-    # sender = serializers.PrimaryKeyRelatedField(
-    #     required=False,
-    #     queryset=User.objects.all()
-    # )
-    # receiver = serializers.PrimaryKeyRelatedField(
-    #     required=False,
-    #     queryset=User.objects.all()
-    # )
-    sender = UserSerializer(read_only=True)
-    receiver = UserSerializer(read_only=True)
-
-    class Meta:
-        model = Message
-        exclude = ('response',)
-
-
-class ShowMessageSerializer(serializers.ModelSerializer):
-    sender = UserSerializer()
-    receiver = UserSerializer()
-
-    class Meta:
-        model = Message
-        fields = '__all__'
-
-
 class TopicSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -117,6 +63,45 @@ class ExtendOrderSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
+class ResponseSerializer(serializers.ModelSerializer):
+    photographer = UserSerializer(read_only=True)
+    order = ExtendOrderSerializer(read_only=True)
+
+    class Meta:
+        model = Response
+        fields = ('id', 'is_selected', 'text', 'order', 'photographer')
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    # sender = serializers.PrimaryKeyRelatedField(
+    #     required=False,
+    #     queryset=User.objects.all()
+    # )
+    # receiver = serializers.PrimaryKeyRelatedField(
+    #     required=False,
+    #     queryset=User.objects.all()
+    # )
+    sender = UserSerializer(read_only=True)
+    receiver = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Message
+        exclude = ('response',)
+
+
+class ShowMessageSerializer(serializers.ModelSerializer):
+    sender = UserSerializer(read_only=True)
+    receiver = UserSerializer()
+
+    class Meta:
+        model = Message
+        fields = '__all__'
+
+    # def create(self, validated_data):
+    #     message = Message.objects.create(receiver=self.receiver, **validated_data)
+    #     return message
+
+
 class MessageCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -133,18 +118,6 @@ class TagSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         tag, create = Tag.objects.get_or_create(name=validated_data['name'])
         return tag
-
-
-# class UserSerializer(serializers.ModelSerializer):
-#
-#     class Meta:
-#         model = User
-#         fields = (
-#             'username',
-#             'first_name',
-#             'last_name',
-#             'email',
-#         )
 
 
 class PhotoSerializer(serializers.ModelSerializer):
@@ -177,13 +150,6 @@ class UserPhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Photo
         fields = '__all__'
-
-    # def create(self, validated_data):
-    #     return Photo.objects.create(**validated_data)
-
-    # def save(self, **kwargs):
-    #     photographer = self.validated_data['photographer']
-    #     image = self.validated_data['image']
 
 
 class ShowUserMessageSerializer(serializers.ModelSerializer):

@@ -13,9 +13,9 @@ from django.contrib.auth import get_user_model, authenticate, login
 from django.forms import modelformset_factory, formset_factory
 from django.views import generic
 from django.core.mail import send_mail
-from .serializers import OrderSerializer, ResponseSerializer, MessageSerializer, ShowMessageSerializer, \
+from .serializers import ResponseSerializer, MessageSerializer, ShowMessageSerializer, \
     ExtendOrderSerializer, MessageCreateSerializer, PhotoSerializer, UserSerializer, TopicSerializer, \
-    UserPhotoSerializer, ShowUserMessageSerializer, UserResponsePhotoSerializer
+    UserPhotoSerializer, UserResponsePhotoSerializer
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from rest_framework.decorators import api_view, action
@@ -511,7 +511,7 @@ def test_ajax(request):
     order = Order.objects.first()
     # print(model_to_dict(order))
     # response = json.dumps(model_to_dict(order), cls=DjangoJSONEncoder)
-    serializer = OrderSerializer(order)
+    serializer = ExtendOrderSerializer(order)
     print(type(serializer.data))
     print(serializer.data)
     return HttpResponse(json.dumps(serializer.data))
@@ -521,7 +521,7 @@ def create_ajax(request):
     # if request.is_ajax():
     # order_data = json.loads(request.body)
     # print(order_data, type(order_data))
-    serializer = OrderSerializer(data=json.loads(request.body))
+    serializer = ExtendOrderSerializer(data=json.loads(request.body))
     if serializer.is_valid():
         serializer.save(owner=request.user)
         # Order.objects.create(
@@ -739,6 +739,12 @@ class UserViewSet(viewsets.ModelViewSet):
     filter_backends = [django_filters.rest_framework.DjangoFilterBackend, filters.SearchFilter]
     search_fields = ['username', 'email']
 
+    @action(methods=['GET'], detail=True)
+    def send_message_this_user(self, request, pk):
+        user = User.objects.get(pk=pk)
+        Message.objects.create(sender=request.user, receiver=user, text=request.data['text'])
+        return RestResponse({'status':'the message has been sent'})
+
 
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
@@ -812,12 +818,56 @@ class UserOrderApiViewSet(viewsets.ModelViewSet):
         return RestResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserMessagesApiView(mixins.ListModelMixin,
-                          mixins.RetrieveModelMixin,
-                          viewsets.GenericViewSet
-                          ):
+class UserResponseApiViewSet(mixins.ListModelMixin,
+                             mixins.RetrieveModelMixin,
+                             viewsets.GenericViewSet
+                             ):
+    """Отклики пользователя"""
+    serializer_class = ResponseSerializer
+
+    def get_queryset(self):
+        return Response.objects.filter(photographer=self.request.user)
+
+    # @action(detail=True, methods=['GET'])
+    # def is_selected(self):
+    #     response = Response.objects.filter(photographer=self.request.user, is_selected=True)
+    #     serializer = ResponseSerializer(response, many=True)
+    #     return RestResponse(serializer.data)
+
+
+class UserMessagesApiViewSet(mixins.ListModelMixin,
+                             mixins.RetrieveModelMixin,
+                             mixins.CreateModelMixin,
+                             viewsets.GenericViewSet
+                             ):
     """Сообщения пользователя, где он либо отправитель, либо получатель"""
     serializer_class = MessageSerializer
 
     def get_queryset(self):
         return Message.objects.filter(Q(sender=self.request.user) | Q(receiver=self.request.user))
+
+    @action(methods=['GET'], detail=True)
+    def send_message(self, request, pk):
+        message = self.get_object()
+        if message.sender == request.user:
+            receiver = message.receiver
+        else:
+            receiver = message.sender
+        Message.objects.create(sender=request.user, receiver=receiver, text=request.data['text'])
+        return RestResponse({'status': 'message created'})
+
+
+# class UserToUserCorrespondence(mixins.ListModelMixin,
+#                                mixins.CreateModelMixin,
+#                                viewsets.GenericViewSet):
+#     serializer_class = ShowMessageSerializer
+#
+#     def get_queryset(self):
+#         get_message = Message.objects.select_related('sender', 'receiver').filter(receiver=self.request.user)
+#         message_dict = {}
+#         for i in get_message:  # получаем список сообщения каждого отправителя
+#             message_dict[i.sender] = []
+#             s = Message.objects.select_related('sender', 'receiver').filter(sender=i.sender, receiver=self.request.user)
+#             for j in s:
+#                 message_dict[i.sender].append(j)
+#         return

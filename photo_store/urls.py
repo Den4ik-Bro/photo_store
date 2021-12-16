@@ -13,7 +13,8 @@ router.register('topics', viewset=views.TopicViewSet, basename='topics')
 router.register('user_photos', viewset=views.UserPhotoApiViewSet, basename='user_photos')
 router.register('user_response_photos', viewset=views.UserResponsePhotoApiViewSet, basename='user_response_photos')
 router.register('user_orders', viewset=views.UserOrderApiViewSet, basename='user_orders')
-router.register('user_messages', viewset=views.UserMessagesApiView, basename='user_messages')
+router.register('user_messages', viewset=views.UserMessagesApiViewSet, basename='user_messages')
+router.register('user_responses', viewset=views.UserResponseApiViewSet, basename='user_responses')
 
 
 app_name = 'photo_store'
