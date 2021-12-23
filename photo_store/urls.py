@@ -28,6 +28,7 @@ urlpatterns = [
     path('profile/<int:pk>/', include([
         path('', views.ProfileDetailView.as_view(), name='show_profile'),
         path('edit/', views.EditProfileView.as_view(), name='edit_profile'),
+        path('edit_avatar/', views.EditProfileImageView.as_view(), name='edit_avatar') # работаю над этим
     ])),
     path('message/<int:pk>/', views.ViewMessage.as_view(), name='show_messages'),
     path('create_message/<int:user_id>/', views.CreateMessage.as_view(), name='create_message'),

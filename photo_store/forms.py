@@ -21,6 +21,12 @@ class ProfileForm(forms.ModelForm):
         fields = ('first_name', 'last_name', 'email')
 
 
+class EditProfileImageForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('profile_image',)
+
+
 class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
@@ -31,7 +37,7 @@ class OrderForm(forms.ModelForm):
                 'date_time',
                 'owner'
             ]
-        widgets = {'topic': forms.TextInput}
+        # widgets = {'topic': forms.TextInput}
 
 
 class ResponseForm(forms.ModelForm):

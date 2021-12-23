@@ -6,6 +6,11 @@ from django.core.exceptions import ValidationError
 
 
 class User(AbstractUser):
+    profile_image = models.ImageField(upload_to='avatar',
+                               verbose_name='аватар',
+                               blank=True,
+                               null=True
+                               )
     is_photographer = models.BooleanField(default=False, null=True, verbose_name='Если выбрано вы фотограф,'
                                                                                  ' нет - заказчик')
 
@@ -84,7 +89,7 @@ class Order(models.Model):
             raise ValidationError('Стартовая дата не может быть позже даты окончания заказа')
 
     def __str__(self):
-        return f'Клиент {self.owner}, тема заказа {self.topic}'
+        return f'Клиент {self.owner}, тема заказа {self.topic.name}'
 
     class Meta:
         verbose_name = 'Запрос на съемку'
@@ -93,7 +98,16 @@ class Order(models.Model):
 
 
 class Topic(models.Model):
-    name = models.CharField(max_length=100, verbose_name='название темы')
+    TOPICS_CHOICES = (
+        ('Свадебная съемка', 'Свадебная съемка'),
+        ('Студийная съемка', 'Студийная съемка'),
+        ('Детская съемка', 'Детская съемка'),
+        ('Контент съемка', 'Контент съемка'),
+        ('Лав стори', 'Лав стори'),
+        ('Прогулка', 'Прогулка'),
+        ('Другое', 'Другое'),
+    )
+    name = models.CharField(max_length=100, verbose_name='название темы', choices=TOPICS_CHOICES)
 
     def __str__(self):
         return self.name

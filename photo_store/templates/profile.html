@@ -4,6 +4,10 @@
 {% block content %}
 
 <h2>Профиль</h2>
+<img src="{{ user.profile_image.url }}" style="width: 15%"><br>
+{% if user.id == request.user.id %}
+    <a href="{% url 'photo_store:edit_avatar' pk=request.user.id %}"><input type="button" value="изменить аватар"></a>
+{% endif %}
     <p>Имя: {{ user.first_name }}</p>
     <p>Фамилия: {{ user.last_name }}</p>
     <p>Email: {{ user.email }}</p>
@@ -32,7 +36,7 @@
 <h2>Портфолио</h2>
 {% for photo in user.photo_set.all %}
     {% if not photo.response %}
-        <a href="{% url 'photo_store:photo_view' pk=photo.id %}"><img src="{{ photo.image.url }}" style="width: 15%"></a>
+        <a href="{% url 'photo_store:photo_view' pk=photo.id %}"><img src="{{ photo.image.url }}" style="width: 25%"></a>
     {% endif %}
 {% endfor %}
 
@@ -59,7 +63,7 @@
     <hr>
     {% endfor %}
 {% else %}
-    <form action="." method="POST">
+    <form action="{% url 'photo_store:create_message' user_id=user.id %}" method="POST">
         {% csrf_token %}
         <h2>Написать сообщение</h2>
         {{ message_form.as_p }}

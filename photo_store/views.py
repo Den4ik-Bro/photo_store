@@ -7,7 +7,7 @@ from django.contrib.auth.models import User, Group
 from .models import Photo, Message, Order, Topic, Response, Tag
 from django.db.models import Q, Prefetch, Avg, Count
 from .forms import ProfileForm, OrderForm, ResponseForm, PhotoForm, SendMessageForm, RegistrationUserForm, TagForm, \
-    RateResponseForm, InviteForm
+    RateResponseForm, InviteForm, EditProfileImageForm
 from django.forms.models import model_to_dict
 from django.contrib.auth import get_user_model, authenticate, login
 from django.forms import modelformset_factory, formset_factory
@@ -24,7 +24,7 @@ from rest_framework.views import APIView
 from rest_framework import status, filters
 from rest_framework import generics, mixins, viewsets
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, IsAuthenticatedOrReadOnly
-from .permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
+from .permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly, IsOwner
 
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
@@ -130,6 +130,16 @@ class PhotoCreateView(generic.CreateView):
             return redirect(reverse('photo_store:show_profile', kwargs={'pk': self.request.user.id}))
 
 
+class DeletePhotoView(generic.DeleteView):
+    model = Photo
+
+    def get_success_url(self):
+        return reverse('photo_store:show_profile', kwargs={'pk': self.request.user.id})
+
+    def get(self, request, pk):
+        return self.post(request, pk)
+
+
 class EditProfileView(generic.UpdateView):
     model = User
     form_class = ProfileForm
@@ -149,14 +159,20 @@ class EditProfileView(generic.UpdateView):
         return super().post(request, pk)
 
 
-class DeletePhotoView(generic.DeleteView):
-    model = Photo
+class EditProfileImageView(generic.UpdateView):
+    model = User
+    form_class = EditProfileImageForm
+    template_name = 'edit_profile_image.html'
 
-    def get_success_url(self):
-        return reverse('photo_store:show_profile', kwargs={'pk': self.request.user.id})
+    def post(self, request, *args, **kwargs):
+        form = EditProfileImageForm(request.POST, request.FILES)
+        user = self.get_object()
+        if form.is_valid():
+            user.profile_image = request.FILES['profile_image']
+            user.save()
+            return redirect(reverse('photo_store:show_profile', kwargs={'pk': request.user.id}))
+        return redirect(reverse('photo_store:show_profile', kwargs={'pk': request.user.id}))
 
-    def get(self, request, pk):
-        return self.post(request, pk)
 
 
 class PhotographersListView(generic.ListView):
@@ -330,7 +346,7 @@ class CreateResponse(generic.CreateView):
             response.photographer = request.user
             response.is_selected = False
             response.save()
-            Message.objects.create(text=response.text,   # сообщение заказчику от исполнителя
+            Message.objects.create(text=f'На ваш заказ {order} откликнулся {response.photographer}',   # сообщение заказчику от исполнителя
                                    sender=response.photographer,
                                    receiver=order.owner)
             # временно отключил отправку почты
@@ -754,7 +770,7 @@ class MessageViewSet(viewsets.ModelViewSet):
 class ResponseViewSet(viewsets.ModelViewSet):
     queryset = Response.objects.all()
     serializer_class = ResponseSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser, IsOwner]
 
     @action(detail=True, methods=['GET'])
     def select_for_order(self, request, pk):
@@ -762,6 +778,8 @@ class ResponseViewSet(viewsets.ModelViewSet):
         response = self.get_object()
         if response.order.response_set.filter(is_selected=True).exists():
             return RestResponse({'status': 'for this order response already selected'}, status=status.HTTP_400_BAD_REQUEST)
+        if request.user != response.order.owner:
+            return RestResponse({'status':'вы не можете выбрать отклик к этому заказу'}, status=status.HTTP_400_BAD_REQUEST)
         response.is_selected = True
         response.save()
         return RestResponse({'status': 'response selected'})
