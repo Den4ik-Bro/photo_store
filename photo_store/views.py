@@ -509,12 +509,12 @@ class UserCreateView(generic.CreateView):
                 login_user = authenticate(request, username=user.username, password=form.cleaned_data['password_1'])
                 login(request, login_user)
                 print(user.email)
-                send_mail(
-                    'Photo_Store: Добро пожаловать!',
-                    'Какой ты молодец!',
-                    'admin@photo_store.ru',
-                    [user.email]
-                          )
+                # send_mail(
+                #     'Photo_Store: Добро пожаловать!',
+                #     'Какой ты молодец!',
+                #     'admin@photo_store.ru',
+                #     [user.email]
+                #           )
                 return redirect(reverse('photo_store:show_profile', kwargs={'pk': request.user.id}))
         else:
             return redirect('register/')

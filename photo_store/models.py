@@ -6,11 +6,12 @@ from django.core.exceptions import ValidationError
 
 
 class User(AbstractUser):
-    profile_image = models.ImageField(upload_to='avatar',
-                               verbose_name='аватар',
-                               blank=True,
-                               null=True
-                               )
+    profile_image = models.ImageField(upload_to='profile_image',
+                                      verbose_name='аватар',
+                                      blank=True,
+                                      null=True,
+                                      default='profile_image/default_avatar.png',
+                                      )
     is_photographer = models.BooleanField(default=False, null=True, verbose_name='Если выбрано вы фотограф,'
                                                                                  ' нет - заказчик')
 

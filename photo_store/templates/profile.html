@@ -1,5 +1,11 @@
 {% extends 'base.html' %}
-{% block title %} Ваш профиль {% endblock %}
+{% block title %}
+{% if user == request.user %}
+    Ваш профиль
+{% else %}
+    профиль пользователя {{ user.first_name }}
+{% endif %}
+{% endblock %}
 
 {% block content %}
 
