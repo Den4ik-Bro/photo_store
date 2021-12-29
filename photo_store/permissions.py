@@ -12,7 +12,9 @@ class IsAdminOrReadOnly(permissions.BasePermission):
 class IsOwnerOrReadOnly(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
-        if request.user.groups.filter(name='Client').exists() and request.method == 'POST' or request.method in permissions.SAFE_METHODS:
+        print(request.user)
+        if request.method in permissions.SAFE_METHODS:
+            print('HI')
             return True
         return request.user == obj.owner
 

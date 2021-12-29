@@ -7,4 +7,5 @@ media/*
 *.log
 =======
 debug.log
+custom_settings.py
 >>>>>>> dev

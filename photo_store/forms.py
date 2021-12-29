@@ -75,6 +75,7 @@ class MessageForm(forms.ModelForm):
                 'response',
                 'sender'
             ]
+        # widgets = {}
 
 
 class SendMessageForm(forms.ModelForm):
@@ -114,7 +115,12 @@ class RegistrationUserForm(forms.ModelForm):
 
 
 class TagForm(forms.Form):
-    name = forms.CharField(label='Тэг')
+    name = forms.CharField(label='Тэг', widget=forms.TextInput(attrs={
+        'class': "form-control form-control-sm",
+        'text': 'text',
+        'placeholder': 'Добавте тэг',
+        'aria-label': '.form-control-sm example',
+    }))
 
 
 class InviteForm(forms.ModelForm):

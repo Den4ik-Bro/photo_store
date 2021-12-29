@@ -417,12 +417,12 @@ class SelectResponseView(generic.UpdateView):
         Message.objects.create(text=f'Вас выбрали исполнителем заказа <a href="{order_url}">{order}</a>',
                                sender=order.owner,
                                receiver=response.photographer)
-        send_mail(
-            'Photo_Store: информация по заказу ' + str(order),
-            'Поздровляем, вас выбрали исполнителем!',
-            'admin@photo_store.ru',
-            [response.photographer.email]
-        )
+        # send_mail(
+        #     'Photo_Store: информация по заказу ' + str(order),
+        #     'Поздровляем, вас выбрали исполнителем!',
+        #     'admin@photo_store.ru',
+        #     [response.photographer.email]
+        # )
         # del_response = Response.objects.filter(order=order)
         # for s in del_response:
         #     if not s.is_selected:
@@ -509,12 +509,12 @@ class UserCreateView(generic.CreateView):
                 login_user = authenticate(request, username=user.username, password=form.cleaned_data['password_1'])
                 login(request, login_user)
                 print(user.email)
-                # send_mail(
-                #     'Photo_Store: Добро пожаловать!',
-                #     'Какой ты молодец!',
-                #     'admin@photo_store.ru',
-                #     [user.email]
-                #           )
+                send_mail(
+                    'Photo_Store: Добро пожаловать!',
+                    'Какой ты молодец!',
+                    'admin@photo_store.ru',
+                    [user.email]
+                          )
                 return redirect(reverse('photo_store:show_profile', kwargs={'pk': request.user.id}))
         else:
             return redirect('register/')

@@ -2,7 +2,7 @@
 {% block title %} Фото №{{current_photo.id}} {% endblock %}
 
 {% block content %}
-
+<div style="text-align:center; margin-top:20px">
         <p><img src="{{photo.image.url}}"></p>
         {% if photo.description %}
                 <p>{{ photo.description }}</p>
@@ -13,8 +13,8 @@
         <form action="{% url 'photo_store:create_tag' photo_id=photo.id %}" method="POST">
                 {% csrf_token %}
                 {{ form.as_p }}
-                <p><input type="submit" value="Добавить тэг"></p>
+                <p><input type="submit" class="btn btn-dark" value="Добавить тэг"></p>
         </form>
-        <a href="{% url 'photo_store:del_photo' pk=photo.id %}"><input type="button" value="Удалить фото"></a>
-
+        <a href="{% url 'photo_store:del_photo' pk=photo.id %}"><input type="button" class="btn btn-dark" value="Удалить фото"></a>
+</div>
 {% endblock %}
