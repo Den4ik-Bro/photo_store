@@ -30,13 +30,13 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 
 
-if not Permission.objects.filter(codename='can_execute').exists():
-    content_type = ContentType.objects.get_for_model(Order)
-    can_execute_permission = Permission.objects.create(
-        codename='can_execute',
-        name='can execute order',
-        content_type=content_type
-    )
+# if not Permission.objects.filter(codename='can_execute').exists():
+#     content_type = ContentType.objects.get_for_model(Order)
+#     can_execute_permission = Permission.objects.create(
+#         codename='can_execute',
+#         name='can execute order',
+#         content_type=content_type
+#     )
 
 User = get_user_model()
 
