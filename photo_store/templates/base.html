@@ -23,8 +23,8 @@
             {% if request.user.is_authenticated %}
 
                 <a class="menu" style="margin-left: 10px; margin-top: 190px;" href="/">Главная</a>
-                <a class="menu" style="margin-left: 240px;" href="{% url 'photo_store:show_profile' pk=request.user.id %}">Профиль</a>
-                <a class="menu" style="margin-left: 250px;" href="{% url 'photo_store:orders' %}">Заказы</a>
+                <a class="menu" style="margin-left: 240px;" href="{% url 'customer:show_profile' pk=request.user.id %}">Профиль</a>
+                <a class="menu" style="margin-left: 250px;" href="{% url 'order:orders' %}">Заказы</a>
                 <a class="menu" style="margin-left: 240px;" href="/logout/">Выход</a>
             {% else %}
                 <a class="menu" style="margin-left: 10px; margin-top: 190px;" href="/">Главная</a>

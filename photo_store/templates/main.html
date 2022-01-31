@@ -10,7 +10,6 @@
     {% endif %}
     {% if user.is_authenticated %}
         <p><a href="/logout/">Выход</a></p>
-        <p><a href="{% url 'photo_store:photographers' %}">Поиск фотографа</a></p>
     {% endif %}
 
 {% endblock %}

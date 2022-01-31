@@ -4,38 +4,39 @@
 
 {% block content %}
     <h1>{{ current_order.topic.name }}</h1>
-    <p>Клиент: <a href="{% url 'photo_store:show_profile' pk=current_order.owner.id %}">{{ current_order.owner.username }}</a></p>
+    <p>Клиент: <a href="{% url 'customer:show_profile' pk=current_order.owner.id %}">{{ current_order.owner.username }}</a></p>
     <p>Описание: {{ current_order.text }}</p>
     <p>Цена: {{ current_order.price }}</p>
-    {% if not is_user_has_response and current_order.owner != user and not accepted_response and user|has_group:"Photographers"%}
-        <form action="{% url 'photo_store:create_response' pk=current_order.id %}" method="POST">
+    {% if not is_user_has_response and current_order.owner != user and not accepted_response %}
+        <form action="{% url 'order:create_response' pk=current_order.id %}" method="POST">
             {% csrf_token %}
             <h2>Отклик на заказ:</h2>
             {{ form.as_p }}
             <input type="submit" value="Ответить">
-            <p><a href="{% url 'photo_store:orders' %}}">назад</a></p>
+            <p><a href="{% url 'order:orders' %}">назад</a></p>
         </form>
+<comment>НИЖЕ НАДО ПЕРЕДЕЛАТЬ, РАБОТАЕТ НЕ КОРЕКТНО</comment>
     {% elif not user.is_photographer %}
-        <p><a href="{% url 'photo_store:orders' %}">назад</a></p>
-    {% elif current_order.owner == user and not accepted_response %}
+        <p><a href="{% url 'order:orders' %}">назад</a></p>
+    {% elif current_order.owner == request.user and not accepted_response %}
         <p>Это ваш заказ</p>
-        <p><a href="{% url 'photo_store:edit_order' pk=current_order.id %}">Редактировать</a></p>
-        <p><a href="{% url 'photo_store:del_order' pk=current_order.id %}">Удалить заказ</a></p>
-        <p><a href="{% url 'photo_store:orders' %}">назад</a></p>
+        <p><a href="{% url 'order:edit_order' pk=current_order.id %}">Редактировать</a></p>
+        <p><a href="{% url 'order:del_order' pk=current_order.id %}">Удалить заказ</a></p>
+        <p><a href="{% url 'order:orders' %}">назад</a></p>
     {% elif current_order.owner == user and accepted_response %}
         <p>Это ваш заказ</p>
-        <p><a href="{% url 'photo_store:orders' %}">назад</a></p>
-<!--        <p><a href="edit/">Редактировать</a></p>-->
+        <p><a href="{% url 'order:orders' %}">назад</a></p>
+        <p><a href="edit/">Редактировать</a></p>
     {% elif current_order.owner != user and accepted_response %}
         <p>Заказ закрыт для откликов</p>
-        <p><a href="{% url 'photo_store:orders' %}">назад</a></p>
+        <p><a href="{% url 'order:orders' %}">назад</a></p>
     {% else %}
         <p>Вы уже оставили отклик на этот заказ</p>
-        <p><a href="{% url 'photo_store:orders' %}">назад</a></p>
+        <p><a href="{% url 'order:orders' %}">назад</a></p>
     {% endif %}
     {% if accepted_response and current_order.owner == user %}
         {% if not accepted_response.rate or not accepted_response.comment %}
-            <form action="{% url 'photo_store:create_rate_response' pk=current_order.id %}" method="POST">
+            <form action="{% url 'order:create_rate_response' pk=current_order.id %}" method="POST">
                 {% csrf_token %}
                 {{ rate_response_form.as_p }}
                 <input type="submit" value="Оставить оценку">
@@ -47,24 +48,24 @@
             {% if current_order.owner == request.user %}
                 {% for response in current_order.response_set.all %}
                     <p>Рейтинг фотографа: {{ response.photographer.avg_rate }}</p>
-                    <a href="{% url 'photo_store:show_profile' pk=response.photographer_id %}"><p>{{ response.photographer }}</p></a>
+                    <a href="{% url 'customer:show_profile' pk=response.photographer_id %}"><p>{{ response.photographer }}</p></a>
                     <p>{{ response.text }}</p>
                     <p>Мои работы:</p>
                     {% for photo in photo_list %}
                         {% if photo.photographer == response.photographer and photo.response and photo.response.order.topic == current_order.topic %}
-                            <a href="{% url 'photo_store:order' pk=photo.response.order.id %}"><img src="{{ photo.image.url }}" style="width: 15%"></a>
+                            <a href="{% url 'order:order' pk=photo.response.order.id %}"><img src="{{ photo.image.url }}" style="width: 15%"></a>
                         {% endif %}
                     {% endfor %}
-                    <p><a href="{% url 'photo_store:select_response' pk=response.id %}"><input type="submit" value="выбрать"></a></p>
+                    <p><a href="{% url 'order:select_response' pk=response.id %}"><input type="submit" value="выбрать"></a></p>
                     ======================================
                 {% endfor %}
             {% else %}
                 {% for response in current_order.response_set.all %}
-                    <a href="{% url 'photo_store:show_profile' pk=response.photographer.id %}"><p>{{ response.photographer }}</p></a>
+                    <a href="{% url 'customer:show_profile' pk=response.photographer.id %}"><p>{{ response.photographer }}</p></a>
                 {% endfor %}
             {% endif %}
     {% else %}
-        <p>Исполнитель: <a href="{% url 'photo_store:show_profile' pk=accepted_response.photographer.id %}">{{ accepted_response.photographer }}</a></p>
+        <p>Исполнитель: <a href="{% url 'customer:show_profile' pk=accepted_response.photographer.id %}">{{ accepted_response.photographer }}</a></p>
         {% if not current_order.is_public and current_order.owner == request.user or accepted_response.photographer == request.user%}
             <p><h2>Фотографии:</h2></p>
             {% for photo in photo_list %}

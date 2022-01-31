@@ -12,13 +12,13 @@
 <h2>Профиль</h2>
 <img src="{{ user.profile_image.url }}" style="width: 15%"><br>
 {% if user.id == request.user.id %}
-    <a href="{% url 'photo_store:edit_avatar' pk=request.user.id %}"><input type="button" value="изменить аватар"></a>
+    <a href="{% url 'customer:edit_avatar' pk=request.user.id %}"><input type="button" value="изменить аватар"></a>
 {% endif %}
     <p>Имя: {{ user.first_name }}</p>
     <p>Фамилия: {{ user.last_name }}</p>
     <p>Email: {{ user.email }}</p>
 {% if user.id == request.user.id %}
-    <p><a href="{% url 'photo_store:edit_profile' pk=user.id %}">Редактировать</a></p>
+    <p><a href="{% url 'customer:edit_profile' pk=user.id %}">Редактировать</a></p>
     <p><a href="/logout/">Выйти</a></p>
 {% endif %}
 <!--<table>-->
@@ -62,14 +62,14 @@
 <!--        <p>{{ message.date_time }}</p>-->
 <!--        <p>Кто: {{ message.sender }}</p>-->
 <!--        <p>Текст: {{ message.text }}</p>-->
-        <a href="{% url 'photo_store:show_messages' pk=conversationer.id %}">
+        <a href="{% url 'message:show_messages' pk=conversationer.id %}">
             <p><input type="button" value="ответить"></p>
         </a>
 <!--        <p>Кому: {{ message.receiver }}</p>-->
     <hr>
     {% endfor %}
 {% else %}
-    <form action="{% url 'photo_store:create_message' user_id=user.id %}" method="POST">
+    <form action="{% url 'message:create_message' user_id=user.id %}" method="POST">
         {% csrf_token %}
         <h2>Написать сообщение</h2>
         {{ message_form.as_p }}
@@ -83,13 +83,13 @@
     <h2>Заказы</h2>
 {% endif %}
     {% for order in user.order_set.all %}
-            <p><a href="{% url 'photo_store:order' pk=order.id %}">{{ order }}</a></p>
+            <p><a href="{% url 'order:order' pk=order.id %}">{{ order }}</a></p>
         {% endfor %}
 
 {% if user.id == request.user.id %}
     <h2>Мои отклики</h2>
     {% for my_response in user.response_set.all %}
-            <p><a href="{% url 'photo_store:order' pk=my_response.order.id %}">{{ my_response }}</a></p>
+            <p><a href="{% url 'order:order' pk=my_response.order.id %}">{{ my_response }}</a></p>
     {% endfor %}
 {% endif %}
 {% endblock %}

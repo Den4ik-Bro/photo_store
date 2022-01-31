@@ -1,5 +1,5 @@
 from django import forms
-from .models import Order, Response, Photo, Message, Tag
+from .models import Photo
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -15,47 +15,6 @@ User = get_user_model()
 #     price = forms.IntegerField(label='Цена')
 
 
-class ProfileForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = ('first_name', 'last_name', 'email')
-
-
-class EditProfileImageForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = ('profile_image',)
-
-
-class OrderForm(forms.ModelForm):
-    class Meta:
-        model = Order
-        # fields = '__all__'
-        # fields = ['topic', 'text', 'price', 'is_public']
-        exclude = \
-            [
-                'date_time',
-                'owner'
-            ]
-        # widgets = {'topic': forms.TextInput}
-
-
-class ResponseForm(forms.ModelForm):
-    class Meta:
-        model = Response
-        fields = ['text']
-
-
-class RateResponseForm(forms.ModelForm):
-    class Meta:
-        model = Response
-        fields = \
-            [
-                'rate',
-                'comment'
-            ]
-
-
 class PhotoForm(forms.ModelForm):
     class Meta:
         model = Photo
@@ -63,40 +22,6 @@ class PhotoForm(forms.ModelForm):
             [
                 'image',
                 'description'
-            ]
-
-
-class MessageForm(forms.ModelForm):
-    class Meta:
-        model = Message
-        exclude =\
-            [
-                'date_time',
-                'response',
-                'sender'
-            ]
-        # widgets = {}
-
-
-class SendMessageForm(forms.ModelForm):
-    class Meta:
-        model = Message
-        fields = ['text']
-
-
-class RegistrationUserForm(forms.ModelForm):
-    password_1 = forms.CharField(widget=forms.PasswordInput(), label='Введите пароль')
-    password_2 = forms.CharField(widget=forms.PasswordInput(), label='Повторите пароль')
-
-    class Meta:
-        model = User
-        fields = \
-            [
-                'username',
-                'first_name',
-                'last_name',
-                'email',
-                'is_photographer'
             ]
 
 
@@ -123,15 +48,6 @@ class TagForm(forms.Form):
     }))
 
 
-class InviteForm(forms.ModelForm):
-    orders = forms.ModelChoiceField(queryset=None, label='заказ', required=False)
 
-    class Meta:
-        model = User
-        fields = ('id',)
-
-    def __init__(self, owner, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['orders'].queryset=Order.objects.filter(owner=owner)
 
 

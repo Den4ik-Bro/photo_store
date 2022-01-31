@@ -4,21 +4,17 @@
 
 {% block content %}
 
-    {% if request.user|has_group:"Photographers" %}
         <h2>Заказы</h2>
         <p>{% for order in user_orders %}</p>
-                <a href="{% url 'photo_store:order' pk=order.id %}">{{ order }}</a>
+                <a href="{% url 'order:order' pk=order.id %}">{{ order }}</a>
             {% endfor %}
-    {% endif %}
-    <form action="{% url 'photo_store:create_order' %}" method="POST">
+<div>
+    <form action="{% url 'order:create_order' %}" method="POST">
         {% csrf_token %}
-        {{ formset.management_form }}
-        {% for form in formset %}
-        <br>
         <h2>Новый заказ</h2>
-            {{ form.as_p }}
-        {% endfor %}
+            {{ order_form.as_p }}
         <input type="submit" value="Создать">
     </form>
+</div>
 
 {% endblock %}

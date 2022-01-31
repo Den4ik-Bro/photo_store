@@ -3,7 +3,7 @@
 
 {% block content %}
 
-  <form action="{% url 'photo_store:edit_order' pk=order.id %}" method="POST">
+  <form action="{% url 'order:edit_order' pk=order.id %}" method="POST">
     {% csrf_token %}
     {{ form.as_p }}
     {% if form.errors %}

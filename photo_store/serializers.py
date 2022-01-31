@@ -2,7 +2,13 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 
-from .models import Order, Response, Message, Topic, Photo, Tag
+from .models import Photo, Tag
+
+from message.models import Message
+from order.models import *
+
+# from ..message.models import Message
+# from ..order.models import *
 
 User = get_user_model()
 

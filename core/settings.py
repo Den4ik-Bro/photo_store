@@ -11,14 +11,13 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
 from pathlib import Path
-
+from . import custom_settings
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 # from mysite.core import custom_settings
-from . import custom_settings
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -43,7 +42,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'order',
+    'customer',
+    'message',
     'photo_store',
+
 ]
 
 MIDDLEWARE = [
@@ -151,7 +154,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = '/profile/'  # '/profile/<int:user_id>/'
 LOGOUT_REDIRECT_URL = '/login/'
-AUTH_USER_MODEL = 'photo_store.User'
+AUTH_USER_MODEL = 'customer.User'
 
 LOGGING = {
     'version': 1,
