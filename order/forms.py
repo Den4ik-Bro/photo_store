@@ -35,7 +35,7 @@ class OrderForm(forms.ModelForm):
             ]
         widgets = {
             'start_date': SelectDateWidget(),
-            'finish_date': widgets.AdminDateWidget(),
+            'finish_date': SelectDateWidget(),
                    }
 
 

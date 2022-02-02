@@ -29,7 +29,7 @@ class Order(models.Model):
             raise ValidationError('Стартовая дата не может быть позже даты окончания заказа')
 
     def __str__(self):
-        return f'Клиент {self.owner}, тема заказа {self.topic.name}'
+        return f'Пользователь - {self.owner}, тема -  {self.topic.name}, {self.pk}'
 
     class Meta:
         verbose_name = 'Запрос на съемку'

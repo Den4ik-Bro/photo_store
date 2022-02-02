@@ -132,7 +132,7 @@ class CreateResponse(generic.CreateView):
                 'admin@photo_store.ru',
                 [order.owner.email]
             )
-            return redirect(reverse('photo_store:order', kwargs={'pk': order.id}))
+            return redirect(reverse('order:order', kwargs={'pk': order.id}))
         return redirect(reverse('order:order', kwargs={'pk': order.id}))
 
 
@@ -195,7 +195,8 @@ class EditOrderUpdateView(generic.UpdateView):
     template_name = 'edit_order.html'
 
     def get_success_url(self):
-        return reverse('customer:profile')
+        order = self.get_object()
+        return reverse('order:order', kwargs={'pk': order.id})
 
 
 class DeleteOrderView(generic.DeleteView):

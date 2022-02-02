@@ -7,6 +7,7 @@
     <p>Клиент: <a href="{% url 'customer:show_profile' pk=current_order.owner.id %}">{{ current_order.owner.username }}</a></p>
     <p>Описание: {{ current_order.text }}</p>
     <p>Цена: {{ current_order.price }}</p>
+
     {% if not is_user_has_response and current_order.owner != user and not accepted_response %}
         <form action="{% url 'order:create_response' pk=current_order.id %}" method="POST">
             {% csrf_token %}
@@ -15,9 +16,8 @@
             <input type="submit" value="Ответить">
             <p><a href="{% url 'order:orders' %}">назад</a></p>
         </form>
+
 <comment>НИЖЕ НАДО ПЕРЕДЕЛАТЬ, РАБОТАЕТ НЕ КОРЕКТНО</comment>
-    {% elif not user.is_photographer %}
-        <p><a href="{% url 'order:orders' %}">назад</a></p>
     {% elif current_order.owner == request.user and not accepted_response %}
         <p>Это ваш заказ</p>
         <p><a href="{% url 'order:edit_order' pk=current_order.id %}">Редактировать</a></p>
