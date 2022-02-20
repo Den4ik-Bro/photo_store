@@ -2,8 +2,11 @@ from django.forms import modelformset_factory
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.db.models import Max, F, Avg
-from .models import Order, Topic, Response, Photo, Message, Tag
-from .forms import PhotoForm, InviteForm, ResponseForm
+from .models import Photo, Tag
+from order.models import Order, Topic, Response
+from message.models import Message
+from .forms import PhotoForm
+from order.forms import InviteForm, ResponseForm
 from PIL import Image
 
 
@@ -15,12 +18,10 @@ class OrderTest(TestCase):
         admin = User.objects.create_user(
             username='admin',
             password='12345',
-            is_photographer=True
         )
         photographer = User.objects.create_user(
             username='user',
             password='123456',
-            is_photographer=True
         )
         topic = Topic.objects.create(name='свадебная')
         topic.save()
@@ -72,13 +73,11 @@ class ProfileTest(TestCase):
         self.user_1 = User.objects.create_user(
             username='test1',
             password='test123',
-            is_photographer=True
         )
 
         self.user_2 = User.objects.create_user(
             username='test2',
             password='test12345',
-            is_photographer=True
         )
 
         self.tag1 = Tag.objects.create(name='test')

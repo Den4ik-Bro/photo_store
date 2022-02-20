@@ -22,7 +22,7 @@ class InviteForm(forms.ModelForm):
 
     def __init__(self, owner, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['orders'].queryset=Order.objects.filter(owner=owner)
+        self.fields['orders'].queryset = Order.objects.filter(owner=owner)
 
 
 class OrderForm(forms.ModelForm):
@@ -30,13 +30,10 @@ class OrderForm(forms.ModelForm):
         model = Order
         exclude = \
             [
-                'date_time',
-                'owner'
+                'date_create',
+                'owner',
             ]
-        widgets = {
-            'start_date': SelectDateWidget(),
-            'finish_date': SelectDateWidget(),
-                   }
+        widgets = {'photo_date': SelectDateWidget(), }
 
 
 class ResponseForm(forms.ModelForm):

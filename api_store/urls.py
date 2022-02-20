@@ -17,14 +17,12 @@ router.register('user_messages', viewset=views.UserMessagesApiViewSet, basename=
 router.register('user_responses', viewset=views.UserResponseApiViewSet, basename='user_responses')
 
 
-app_name = 'api'
+app_name = 'api_store'
 
 
 urlpatterns = [
-    path('api/', include([
-        path('api-token-auth/', token_views.obtain_auth_token)
-    ])),
-    path('api/', include(router.urls)),
+    path('api-token-auth/', token_views.obtain_auth_token),
+    path('', include(router.urls)),
     # ниже пока тестовые урлы, пока не удаляю
     path('show_order_api/<int:pk>/', views.show_order_ajax, name='show_order_ajax'),
     path('create_order_api/', views.create_or_update_order_api, name='create_order_api'),
@@ -39,8 +37,8 @@ urlpatterns = [
     path('test_create_response_ajax/<int:order_id>/', views.create_response_ajax, name='create_response_ajax'),
     path('test_create_message_ajax/<int:pk>/', views.create_message_ajax, name='create_message_ajax'),
     path('test_show_message_ajax/<int:pk>/', views.show_message_ajax, name='show_message_ajax'),
-    # path('api/orders/', views.ApiOrderListView.as_view(), name='api_orders'),
-    # path('api/orders/<int:pk>/', views.ApiOrderDetailView.as_view(), name='api_order')
-    # path('api/orders/<int:pk>/', views.ApiListUpdateOrderView.as_view(), name='api_list_update_order'),
-    # path('api/orders/', views.ApiListUpdateOrderView.as_view(), name='api_list_order'),
+    # path('api_store/orders/', views.ApiOrderListView.as_view(), name='api_orders'),
+    # path('api_store/orders/<int:pk>/', views.ApiOrderDetailView.as_view(), name='api_order')
+    # path('api_store/orders/<int:pk>/', views.ApiListUpdateOrderView.as_view(), name='api_list_update_order'),
+    # path('api_store/orders/', views.ApiListUpdateOrderView.as_view(), name='api_list_order'),
 ]

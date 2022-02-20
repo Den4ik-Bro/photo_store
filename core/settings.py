@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'customer',
     'message',
     'photo_store',
-
+    'api_store',
 ]
 
 MIDDLEWARE = [
@@ -135,6 +135,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = custom_settings.EMAIL_HOST_USER
 EMAIL_HOST_PASSWORD = custom_settings.EMAIL_HOST_PASSWORD
 EMAIL_PORT = 587
+# SSL_PORT = 465
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 

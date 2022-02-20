@@ -83,7 +83,8 @@ class OrderCreateView(generic.CreateView):
 
 class GetOrderDetailView(generic.DetailView):
     model = Order
-    template_name = 'order_info.html'
+    # template_name = 'order_info.html'
+    template_name = 'test.html'
     context_object_name = 'current_order'
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -158,22 +159,18 @@ class CreateRateResponse(generic.CreateView):
 
 class SelectResponseView(generic.UpdateView):
     model = Response
-    # queryset = Response.objects.all()
     template_name = 'order_info.html'
 
-    # def get(self, request, pk):
-    #     return self.post(request, pk)
-
-    def get(self, request, pk):
+    def post(self, request, pk, *args, **kwargs):
         response = Response.objects.get(pk=pk)
         order = response.order
         response.is_selected = True
         response.save()
         # response.photographer.permissions.add(can_execute_permission)
-        can_execute = Permission.objects.get(codename='can_execute')
-        response.photographer.user_permissions.add(can_execute)
-        order_url = reverse('photo_store:order', kwargs={'pk': order.id})
-        Message.objects.create(text=f'Вас выбрали исполнителем заказа <a href="{order_url}">{order}</a>',
+        # can_execute = Permission.objects.get(codename='can_execute')
+        # response.photographer.user_permissions.add(can_execute)
+        # order_url = reverse('photo_store:order', kwargs={'pk': order.id})
+        Message.objects.create(text=f'Вас выбрали исполнителем заказа {order.title}',
                                sender=order.owner,
                                receiver=response.photographer)
         send_mail(

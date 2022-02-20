@@ -14,27 +14,29 @@ def is_correct_date(date):
 
 
 class Order(models.Model):
-    date_time = models.DateTimeField(verbose_name='дата', default=datetime.datetime.now)
+    title = models.CharField(max_length=50, verbose_name='название', null=True)
+    date_create = models.DateTimeField(verbose_name='дата создания', default=datetime.datetime.now)
     topic = models.ForeignKey('Topic', on_delete=models.CASCADE, verbose_name='тема_задачи')
     text = models.TextField(blank=True, null=True, verbose_name='описание_задачи')
     price = models.IntegerField(verbose_name='цена',
                                 validators=(MinValueValidator(1, 'минимальная цена не может быть меньше еденицы'),))
     is_public = models.BooleanField(default=True, verbose_name='публично (фотографии смогут увидеть все)')
     owner = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='клиент')  # заказчик
-    start_date = models.DateField(verbose_name='дата начала', null=True, blank=True, validators=(is_correct_date,))
-    finish_date = models.DateField(verbose_name='дата завершения', null=True, blank=True, validators=(is_correct_date,))
+    photo_date = models.DateField(verbose_name='дата съемки', validators=(is_correct_date,), null=True, )
+    # start_date = models.DateField(verbose_name='дата начала', null=True, blank=True, validators=(is_correct_date,))
+    # finish_date = models.DateField(verbose_name='дата завершения', null=True, blank=True, validators=(is_correct_date,))
 
-    def clean(self):
-        if self.start_date > self.finish_date:
-            raise ValidationError('Стартовая дата не может быть позже даты окончания заказа')
+    # def clean(self):
+    #     if self.start_date > self.finish_date:
+    #         raise ValidationError('Стартовая дата не может быть позже даты окончания заказа')
 
     def __str__(self):
-        return f'Пользователь - {self.owner}, тема -  {self.topic.name}, {self.pk}'
+        return f'название: {self.title}, тема: {self.topic.name}, {self.pk}'
 
     class Meta:
         verbose_name = 'Запрос на съемку'
         verbose_name_plural = 'Запросы на съемку'
-        ordering = ('-date_time',)
+        ordering = ('-date_create',)
 
 
 class Topic(models.Model):
@@ -63,7 +65,7 @@ class Response(models.Model):
     is_selected = models.BooleanField(blank=True, null=True)
     rate = models.PositiveSmallIntegerField\
         (
-            default=0,
+            default=None,
             blank=True,
             null=True,
             verbose_name='оценка',
