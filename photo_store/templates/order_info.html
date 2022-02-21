@@ -1,91 +1,90 @@
 {% extends 'base.html' %}
-{% load auth_extras %}
-{% block title %} Заказ №{{current_order.id}} {% endblock %}
+{% block title %} test {% endblock %}
 
 {% block content %}
-    <h1>{{ current_order.topic.name }}</h1>
-    <p>Клиент: <a href="{% url 'customer:show_profile' pk=current_order.owner.id %}">{{ current_order.owner.username }}</a></p>
-    <p>Описание: {{ current_order.text }}</p>
-    <p>Цена: {{ current_order.price }}</p>
 
-    {% if not is_user_has_response and current_order.owner != user and not accepted_response %}
-        <form action="{% url 'order:create_response' pk=current_order.id %}" method="POST">
-            {% csrf_token %}
-            <h2>Отклик на заказ:</h2>
-            {{ form.as_p }}
-            <input type="submit" value="Ответить">
-            <p><a href="{% url 'order:orders' %}">назад</a></p>
-        </form>
-
-<comment>НИЖЕ НАДО ПЕРЕДЕЛАТЬ, РАБОТАЕТ НЕ КОРЕКТНО</comment>
-    {% elif current_order.owner == request.user and not accepted_response %}
-        <p>Это ваш заказ</p>
-        <p><a href="{% url 'order:edit_order' pk=current_order.id %}">Редактировать</a></p>
-        <p><a href="{% url 'order:del_order' pk=current_order.id %}">Удалить заказ</a></p>
-        <p><a href="{% url 'order:orders' %}">назад</a></p>
-    {% elif current_order.owner == user and accepted_response %}
-        <p>Это ваш заказ</p>
-        <p><a href="{% url 'order:orders' %}">назад</a></p>
-        <p><a href="edit/">Редактировать</a></p>
-    {% elif current_order.owner != user and accepted_response %}
-        <p>Заказ закрыт для откликов</p>
-        <p><a href="{% url 'order:orders' %}">назад</a></p>
-    {% else %}
-        <p>Вы уже оставили отклик на этот заказ</p>
-        <p><a href="{% url 'order:orders' %}">назад</a></p>
-    {% endif %}
-    {% if accepted_response and current_order.owner == user %}
-        {% if not accepted_response.rate or not accepted_response.comment %}
-            <form action="{% url 'order:create_rate_response' pk=current_order.id %}" method="POST">
-                {% csrf_token %}
-                {{ rate_response_form.as_p }}
-                <input type="submit" value="Оставить оценку">
-            </form>
+{% if request.user == current_order.owner %}
+    <div style="text-align:center;">
+        <h2>{{ current_order.title }}</h2>
+        {% if not accepted_response %}
+            <p><a href="{% url 'order:edit_order' pk=current_order.id %}">Редактировать</a></p>
+            <p><a href="{% url 'order:del_order' pk=current_order.id %}">Удалить заказ</a></p>
         {% endif %}
-    {% endif %}
-    {% if not accepted_response %}
-        <h2>Откликнулись:</h2>
-            {% if current_order.owner == request.user %}
-                {% for response in current_order.response_set.all %}
-                    <p>Рейтинг фотографа: {{ response.photographer.avg_rate }}</p>
-                    <a href="{% url 'customer:show_profile' pk=response.photographer_id %}"><p>{{ response.photographer }}</p></a>
-                    <p>{{ response.text }}</p>
-                    <p>Мои работы:</p>
-                    {% for photo in photo_list %}
-                        {% if photo.photographer == response.photographer and photo.response and photo.response.order.topic == current_order.topic %}
-                            <a href="{% url 'order:order' pk=photo.response.order.id %}"><img src="{{ photo.image.url }}" style="width: 15%"></a>
-                        {% endif %}
-                    {% endfor %}
-                    <p><a href="{% url 'order:select_response' pk=response.id %}"><input type="submit" value="выбрать"></a></p>
-                    ======================================
-                {% endfor %}
-            {% else %}
-                {% for response in current_order.response_set.all %}
-                    <a href="{% url 'customer:show_profile' pk=response.photographer.id %}"><p>{{ response.photographer }}</p></a>
-                {% endfor %}
-            {% endif %}
-    {% else %}
-        <p>Исполнитель: <a href="{% url 'customer:show_profile' pk=accepted_response.photographer.id %}">{{ accepted_response.photographer }}</a></p>
-        {% if not current_order.is_public and current_order.owner == request.user or accepted_response.photographer == request.user%}
-            <p><h2>Фотографии:</h2></p>
-            {% for photo in photo_list %}
-                <img src="{{ photo.image.url }}" style="width: 15%">
-            {% endfor %}
-        {% elif current_order.is_public %}
-            <p><h2>Фотографии:</h2></p>
-            {% for photo in photo_list %}
-                <img src="{{ photo.image.url }}" style="width: 15%">
+        <p><a href="{% url 'order:orders' %}">назад</a></p>
+        <p>тема: {{ current_order.topic }}</p>
+        <p>описание: {{ current_order.text }}</p>
+        <p>цена: {{ current_order.price }}</p>
+        <p>дата съемки: {{ current_order.photo_date }}</p>
+
+        {% if not accepted_response %}
+            <h2>Откликнулись</h2>
+            {% for response in current_order.response_set.all %}
+                <a href="{% url 'customer:show_profile' pk=response.photographer_id %}"><p>{{ response.photographer }}</p></a>
+                <p>{{ response.text }}</p>
+                <form action="{% url 'order:select_response' pk=response.id %}" method="POST">
+                    {% csrf_token %}
+                    <input type="submit" value="выбрать исполнителем">
+                </form>
+                <hr>
             {% endfor %}
         {% else %}
-            <h3>Заказчик ограничил доступ к материалам заказа</h3>
+            <p>Вы выбрали исполнителем <a href="{% url 'customer:show_profile' pk=accepted_response.photographer.id %}">{{ accepted_response.photographer }}</a></p>
+            {% if current_order.is_public %}
+            <p><h2>Фотографии:</h2></p>
+            {% for photo in photo_list %}
+                <img src="{{ photo.image.url }}" style="width: 15%">
+            {% endfor %}
+            {% else %}
+                <h3>Заказчик ограничил доступ к материалам заказа</h3>
+            {% endif %}
         {% endif %}
+
+    </div>
+{% elif request.user != current_order.owner %}
+    <div style="text-align:center;">
+        <h2>{{ current_order.title }}</h2>
+        <p><a href="{% url 'order:orders' %}">назад</a></p>
+        <p>тема: {{ current_order.topic }}</p>
+        <p>описание: {{ current_order.text }}</p>
+        <p>цена: {{ current_order.price }}</p>
+        <p>дата съемки: {{ current_order.photo_date }}</p>
+
+        {% if not is_user_has_response and request.user != current_order.owner and not accepted_response %}
+            <h2>Оставте отклик</h2>
+            <form action="{% url 'order:create_response' pk=current_order.id %}" method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input type="submit" value="Ответить">
+            </form>
+        {% elif  is_user_has_response and not accepted_response%}
+            <h3>Вы уже оставили отклик</h3>
+        {% endif %}
+
+        {% if accepted_response and request.user != current_order.owner and request.user != accepted_response.photographer %}
+            <h2>Заказ закрыт для откликов</h2>
+        {% elif accepted_response and  request.user == accepted_response.photographer%}
+            <p><h3>загрузить фотографии</h3></p>
+            <form action="{% url 'photo_store:create_response_photo' pk=current_order.id %}" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ photo_form.as_p }}
+                <p><input type="submit" value="Добавить"></p>
+            </form>
+        {% endif %}
+
+    </div>
+    {% if accepted_response and current_order.is_publick or current_order.owner == request.user or accepted_response.photographer == request.user %}
+    <div>
+        <p><h2>Фотографии:</h2></p>
+        {% for photo in photo_list %}
+            <img src="{{ photo.image.url }}" style="width: 10%">
+        {% endfor %}
+        {% if current_order.owner == request.user %}
+
+        {% endif %}
+    </div>
     {% endif %}
-    {% if request.user|check_permission:'can_execute' and accepted_response.photographer == request.user %}
-        <p><h3>загрузить фотографии</h3></p>
-        <form action="{% url 'photo_store:create_response_photo' pk=current_order.id %}" method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ photo_form.as_p }}
-            <p><input type="submit" value="Добавить"></p>
-        </form>
+    {% if accepted_response and not current_order.is_public %}
+        <h2 style="text-align:center;">Заказчик ограничил просмотр фотографий</h2>
     {% endif %}
+{% endif %}
 {% endblock %}

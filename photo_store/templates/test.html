@@ -56,11 +56,13 @@
                 {{ form.as_p }}
                 <input type="submit" value="Ответить">
             </form>
+        {% elif  is_user_has_response and not accepted_response%}
+            <h3>Вы уже оставили отклик</h3>
         {% endif %}
 
         {% if accepted_response and request.user != current_order.owner and request.user != accepted_response.photographer %}
             <h2>Заказ закрыт для откликов</h2>
-        {% else %}
+        {% elif accepted_response and  request.user == accepted_response.photographer%}
             <p><h3>загрузить фотографии</h3></p>
             <form action="{% url 'photo_store:create_response_photo' pk=current_order.id %}" method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
@@ -70,14 +72,18 @@
         {% endif %}
 
     </div>
-    {% if current_order.is_publick or current_order.owner == request.user or accepted_response.photographer == request.user%}
+    {% if accepted_response and current_order.is_publick or current_order.owner == request.user or accepted_response.photographer == request.user %}
     <div>
         <p><h2>Фотографии:</h2></p>
         {% for photo in photo_list %}
             <img src="{{ photo.image.url }}" style="width: 10%">
         {% endfor %}
+        {% if current_order.owner == request.user %}
+
+        {% endif %}
     </div>
-    {% else %}
+    {% endif %}
+    {% if accepted_response and not current_order.is_public %}
         <h2 style="text-align:center;">Заказчик ограничил просмотр фотографий</h2>
     {% endif %}
 {% endif %}

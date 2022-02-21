@@ -21,7 +21,7 @@ class Order(models.Model):
     price = models.IntegerField(verbose_name='цена',
                                 validators=(MinValueValidator(1, 'минимальная цена не может быть меньше еденицы'),))
     is_public = models.BooleanField(default=True, verbose_name='публично (фотографии смогут увидеть все)')
-    owner = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='клиент')  # заказчик
+    owner = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='клиент')
     photo_date = models.DateField(verbose_name='дата съемки', validators=(is_correct_date,), null=True, )
     # start_date = models.DateField(verbose_name='дата начала', null=True, blank=True, validators=(is_correct_date,))
     # finish_date = models.DateField(verbose_name='дата завершения', null=True, blank=True, validators=(is_correct_date,))

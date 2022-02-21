@@ -9,7 +9,9 @@ urlpatterns =[
     path('profile/<int:pk>/', include([
         path('', views.ProfileDetailView.as_view(), name='show_profile'),
         path('edit/', views.EditProfileView.as_view(), name='edit_profile'),
-        path('edit_avatar/', views.EditProfileImageView.as_view(), name='edit_avatar')
+        path('edit_avatar/', views.EditProfileImageView.as_view(), name='edit_avatar'),
+        path('profile_orders/', views.ProfileOrders.as_view(), name='profile_orders'),
+        path('profile_responses/', views.ProfileResponses.as_view(), name='profile_responses')
     ])),
     path('register/', views.RegistrationFormView.as_view()),
     path('create_user/', views.UserCreateView.as_view()),

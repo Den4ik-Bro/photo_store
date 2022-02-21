@@ -18,27 +18,17 @@
     <p>Фамилия: {{ user.last_name }}</p>
     <p>Email: {{ user.email }}</p>
 {% if user.id == request.user.id %}
-    <p><a href="{% url 'customer:edit_profile' pk=user.id %}">Редактировать</a></p>
-    <p><a href="/logout/">Выйти</a></p>
+<!--    <p><a href="{% url 'customer:edit_profile' pk=user.id %}">Редактировать</a></p>-->
+<!--    <p><a href="/logout/">Выйти</a></p>-->
+        <ul>
+            <li><a href="{% url 'customer:edit_profile' pk=user.id %}">Редактировать профиль</a></li>
+            <li><a href="{% url 'customer:profile_orders' pk=user.id %}">Мои заказы</a></li>
+            <li><a href="{% url 'message:incoming_message' %}">Мои сообщения</a></li>
+            <li><a href="{% url 'customer:profile_responses' pk=user.id %}">Отклики</a> </li>
+        </ul>
+
 {% endif %}
-<!--<table>-->
-<!--    <tr>-->
-<!--        <th>Загружено фотографий</th>-->
-<!--        <th>Создано заказов</th>-->
-<!--        <th>Всего откликов на заказы</th>-->
-<!--    </tr>-->
-<!--    <tr>-->
-<!--        <td>{{ user.photo_set.count }}</td>-->
-<!--        <td>{{ user.order_set.count }}</td>-->
-<!--        <td>{{ user.response_set.count }}</td>-->
-<!--    </tr>-->
-<!--</table>-->
-<p>Загружено фотографий: {{ user.photo_set.count }}</p>
-<p>Создано заказов: {{ user.order_set.count }}</p>
-<p>Всего откликов на заказы: {{ user.response_set.count }}</p>
-{% if user.is_photographer %}
-    <p>Рейтинг: {{ user.avg_rate }}</p>
-{% endif %}
+
 <h2>Портфолио</h2>
 {% for photo in user.photo_set.all %}
     {% if not photo.response %}
@@ -54,21 +44,7 @@
         <p><input type="submit" value="Добавить"></p>
     </form>
 {% endif %}
-{% if user.id == request.user.id %}
-    <h2>Сообщения</h2>
-    {% for conversationer, message in message_dict.items %}
-        <p>{{ conversationer }}</p>
-        <p>{{ message.0.text|safe }}</p>
-<!--        <p>{{ message.date_time }}</p>-->
-<!--        <p>Кто: {{ message.sender }}</p>-->
-<!--        <p>Текст: {{ message.text }}</p>-->
-        <a href="{% url 'message:show_messages' pk=conversationer.id %}">
-            <p><input type="button" value="ответить"></p>
-        </a>
-<!--        <p>Кому: {{ message.receiver }}</p>-->
-    <hr>
-    {% endfor %}
-{% else %}
+{% if user.id != request.user.id %}
     <form action="{% url 'message:create_message' user_id=user.id %}" method="POST">
         {% csrf_token %}
         <h2>Написать сообщение</h2>
@@ -77,20 +53,12 @@
     </form>
 {% endif %}
 
-{% if user.id == request.user.id %}
-    <h2>Мои заказы</h2>
-{% else %}
+{% if user.id != request.user.id %}
     <h2>Заказы</h2>
-{% endif %}
     {% for order in user.order_set.all %}
-            <p><a href="{% url 'order:order' pk=order.id %}">{{ order }}</a></p>
-        {% endfor %}
-
-{% if user.id == request.user.id %}
-    <h2>Мои отклики</h2>
-    {% for my_response in user.response_set.all %}
-            <p><a href="{% url 'order:order' pk=my_response.order.id %}">{{ my_response }}</a></p>
+        <p><a href="{% url 'order:order' pk=order.id %}">{{ order }}</a></p>
     {% endfor %}
 {% endif %}
+
 
 {% endblock %}

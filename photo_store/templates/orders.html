@@ -10,13 +10,5 @@
                 <a href="{% url 'customer:show_profile' pk=order.owner.id %}">{{ order.owner }}</a><br>
                 <a href="{% url 'order:order' pk=order.id %}">{{ order.topic }}</a>
             {% endfor %}
-<div>
-    <form action="{% url 'order:create_order' %}" method="POST">
-        {% csrf_token %}
-        <h2>Новый заказ</h2>
-            {{ order_form.as_p }}
-        <input type="submit" value="Создать">
-    </form>
-</div>
 
 {% endblock %}

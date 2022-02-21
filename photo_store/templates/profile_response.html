@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %} {% endblock %}
+
+{% block content %}
+    <div style="text-align:center;">
+        {% for my_response in user.response_set.all %}
+            <p><a href="{% url 'order:order' pk=my_response.order.id %}">{{ my_response }}</a></p>
+            <hr>
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model, authenticate, login
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import send_mail
 from django.db.models import Prefetch, Avg
 from django.forms import modelformset_factory
@@ -6,7 +7,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views import generic
 
-from order.forms import InviteForm
+from order.forms import InviteForm, OrderForm
 from order.models import Order, Response
 from message.forms import SendMessageForm
 from message.models import Message
@@ -30,7 +31,7 @@ def profile_login(request):
     return redirect(reverse('customer:show_profile', kwargs={'pk': request.user.id}))
 
 
-class ProfileDetailView(generic.DetailView):
+class ProfileDetailView(LoginRequiredMixin, generic.DetailView):
     model = User
     template_name = 'profile.html'
 
@@ -52,6 +53,7 @@ class ProfileDetailView(generic.DetailView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
+        context['order_form'] = OrderForm()
         context['photo_form'] = PhotoForm()
         context['message_form'] = SendMessageForm()
         get_message = Message.objects.select_related('sender', 'receiver').filter(receiver=self.request.user)
@@ -65,7 +67,15 @@ class ProfileDetailView(generic.DetailView):
         return context
 
 
-class EditProfileView(generic.UpdateView):
+class ProfileOrders(ProfileDetailView):
+    template_name = 'profile_order.html'
+
+
+class ProfileResponses(ProfileDetailView):
+    template_name = 'profile_response.html'
+
+
+class EditProfileView(LoginRequiredMixin, generic.UpdateView):
     model = User
     form_class = ProfileForm
     template_name = 'edit_profile.html'
@@ -84,7 +94,7 @@ class EditProfileView(generic.UpdateView):
         return super().post(request, pk)
 
 
-class EditProfileImageView(generic.UpdateView):
+class EditProfileImageView(LoginRequiredMixin, generic.UpdateView):
     model = User
     form_class = EditProfileImageForm
     template_name = 'edit_profile_image.html'

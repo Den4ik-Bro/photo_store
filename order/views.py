@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import Permission
 from django.core.mail import send_mail
 from django.forms import modelformset_factory
@@ -51,7 +52,7 @@ class InviteToOrders(generic.CreateView):
             return redirect(reverse('customer:photographers'))
 
 
-class OrderListView(generic.ListView):
+class OrderListView(LoginRequiredMixin, generic.ListView):
     # model = Order
     queryset = Order.objects.only('topic', 'owner',)\
         .select_related('owner', 'topic')\
@@ -78,13 +79,13 @@ class OrderCreateView(generic.CreateView):
             order.owner = request.user
             order.save()
             return redirect(reverse('customer:profile'))
-        return redirect(reverse('order:orders'))
+        return redirect(reverse('customer:profile_orders', kwargs={'pk': request.user.id}))
 
 
-class GetOrderDetailView(generic.DetailView):
+class GetOrderDetailView(LoginRequiredMixin, generic.DetailView):
     model = Order
-    # template_name = 'order_info.html'
-    template_name = 'test.html'
+    template_name = 'order_info.html'
+    # template_name = 'test.html'
     context_object_name = 'current_order'
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -111,7 +112,7 @@ class GetOrderDetailView(generic.DetailView):
         return context
 
 
-class CreateResponse(generic.CreateView):
+class CreateResponse(LoginRequiredMixin, generic.CreateView):
     model = Response
     template_name = 'order_info.html'
 
@@ -137,7 +138,7 @@ class CreateResponse(generic.CreateView):
         return redirect(reverse('order:order', kwargs={'pk': order.id}))
 
 
-class CreateRateResponse(generic.CreateView):
+class CreateRateResponse(LoginRequiredMixin, generic.CreateView):
     model = Response
     template_name = 'order_info.html'
 
@@ -157,7 +158,7 @@ class CreateRateResponse(generic.CreateView):
             return redirect(reverse('order:order', kwargs={'pk': order.id}))
 
 
-class SelectResponseView(generic.UpdateView):
+class SelectResponseView(LoginRequiredMixin, generic.UpdateView):
     model = Response
     template_name = 'order_info.html'
 
@@ -186,7 +187,7 @@ class SelectResponseView(generic.UpdateView):
         return redirect(reverse('order:order', kwargs={'pk': order.id}))
 
 
-class EditOrderUpdateView(generic.UpdateView):
+class EditOrderUpdateView(LoginRequiredMixin, generic.UpdateView):
     model = Order
     form_class = OrderForm
     template_name = 'edit_order.html'
@@ -196,7 +197,7 @@ class EditOrderUpdateView(generic.UpdateView):
         return reverse('order:order', kwargs={'pk': order.id})
 
 
-class DeleteOrderView(generic.DeleteView):
+class DeleteOrderView(LoginRequiredMixin, generic.DeleteView):
     model = Order
     template_name = 'order_info.html'
 

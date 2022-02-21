@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %} {% endblock %}
+
+{% block content %}
+    <h2>Сообщения</h2>
+    {% for conversationer, message in message_dict.items %}
+        <p>{{ conversationer }}</p>
+        <p>{{ message.0.text|safe }}</p>
+        <a href="{% url 'message:show_messages' pk=conversationer.id %}">
+            <p><input type="button" value="ответить"></p>
+        </a>
+    <hr>
+    {% endfor %}
+{% endblock %}

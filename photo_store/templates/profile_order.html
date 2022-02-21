@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %} {% endblock %}
+
+{% block content %}
+    <div style="text-align:center;">
+        {% for order in user.order_set.all %}
+            <p><a href="{% url 'order:order' pk=order.id %}">{{ order }}</a></p>
+            <hr>
+        {% endfor %}
+    </div>
+    <div>
+    <form action="{% url 'order:create_order' %}" method="POST">
+        {% csrf_token %}
+        <h2>Новый заказ</h2>
+        {{ order_form.as_p }}
+        <input type="submit" value="Создать">
+    </form>
+    </div>
+{% endblock %}
