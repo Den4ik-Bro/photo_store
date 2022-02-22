@@ -1,16 +1,11 @@
 from django import forms
 from django.contrib.admin import widgets
 from django.contrib.auth import get_user_model
-from django.forms import SelectDateWidget
+from django.forms import SelectDateWidget, fields
 
 from .models import Order, Response
 
 User = get_user_model()
-
-
-class MyDateInput(forms.DateInput):
-    input_type = 'date'
-    format = '%Y-%m-%d'
 
 
 class InviteForm(forms.ModelForm):
@@ -26,6 +21,12 @@ class InviteForm(forms.ModelForm):
 
 
 class OrderForm(forms.ModelForm):
+    photo_date = fields.DateField(
+        widget=forms.widgets.DateInput(attrs={'type': 'date'}),
+        # если type == datetime-local, нужно добавить input_formats=['%Y-%m-%dT%H:%M']
+        label='Дата съемки'
+    )
+
     class Meta:
         model = Order
         exclude = \
